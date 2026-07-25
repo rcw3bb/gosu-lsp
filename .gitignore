@@ -1,0 +1,46 @@
+# Gradle
+.gradle/
+build/
+server/build/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code — ignore everything except launch.json and tasks.json
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+client/out/
+client/node_modules/
+client/server/
+*.vsix
+
+# npm
+npm-debug.log*
+package-lock.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Java
+*.class
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+
+# Generated ANTLR sources
+server/src/main/java/com/gosu/lsp/grammar/GosuLanguage*.java
+server/src/main/java/com/gosu/lsp/grammar/GosuLanguage*.tokens
+server/src/main/java/com/gosu/lsp/grammar/GosuLanguage*.interp

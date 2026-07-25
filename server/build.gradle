@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'antlr'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+group = 'com.gosu'
+version = '0.1.0-SNAPSHOT'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass = 'com.gosu.lsp.GosuLanguageServerLauncher'
+}
+
+generateGrammarSource {
+    maxHeapSize = '64m'
+    arguments += ['-package', 'com.gosu.lsp.grammar', '-visitor', '-listener']
+    outputDirectory = file("${buildDir}/generated-src/antlr/main/com/gosu/lsp/grammar")
+}
+
+// Include ANTLR-generated sources in compilation
+sourceSets.main.java.srcDir file("${buildDir}/generated-src/antlr/main")
+
+dependencies {
+    antlr 'org.antlr:antlr4:4.13.2'
+    implementation 'org.antlr:antlr4-runtime:4.13.2'
+    implementation 'org.eclipse.lsp4j:org.eclipse.lsp4j:0.23.1'
+}
+
+// Produce a fat JAR with all dependencies included
+shadowJar {
+    archiveBaseName    = 'gosu-lsp-server'
+    archiveVersion     = version
+    archiveClassifier  = ''
+    mergeServiceFiles()
+    manifest {
+        attributes 'Main-Class': application.mainClass.get()
+    }
+}
+
+// Copy the fat JAR and root LICENSE to the VS Code extension directory
+tasks.register('copyServerJar') {
+    dependsOn shadowJar
+    doLast {
+        copy {
+            from shadowJar.archiveFile
+            into project.file('../client/server')
+            rename { 'gosu-lsp-server.jar' }
+        }
+        copy {
+            from project.file('../LICENSE')
+            into project.file('../client')
+        }
+    }
+}

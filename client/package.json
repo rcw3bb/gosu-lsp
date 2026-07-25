@@ -1,0 +1,55 @@
+{
+  "name": "gosu-lsp",
+  "displayName": "Gosu Language Support",
+  "description": "Language support for Gosu (.gs, .gsx) files — syntax highlighting, diagnostics, completion, hover, and go-to-definition via LSP.",
+  "version": "0.1.0",
+  "publisher": "gosu-lsp",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gosu-lsp/gosu-lsp"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "gosu",
+    "language server",
+    "lsp"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "gosu",
+        "aliases": ["Gosu", "gosu"],
+        "extensions": [".gs", ".gsx"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "gosu",
+        "scopeName": "source.gosu",
+        "path": "./syntaxes/gosu.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

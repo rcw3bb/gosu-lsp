@@ -1,0 +1,7 @@
+// Root build — shared configuration propagated to all subprojects
+subprojects {
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+    }
+}

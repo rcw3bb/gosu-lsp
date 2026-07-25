@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "npm: compile - client",
+            "type": "npm",
+            "script": "compile",
+            "path": "client/",
+            "group": "build",
+            "problemMatcher": "$tsc",
+            "isBackground": false
+        }
+    ]
+}

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Gosu",
+  "scopeName": "source.gosu",
+  "fileTypes": ["gs", "gsx"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#annotations" },
+    { "include": "#keywords-control" },
+    { "include": "#keywords-storage" },
+    { "include": "#keywords-declaration" },
+    { "include": "#keywords-other" },
+    { "include": "#builtin-types" },
+    { "include": "#constants" },
+    { "include": "#numbers" },
+    { "include": "#operators" },
+    { "include": "#class-declaration" },
+    { "include": "#function-declaration" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.gosu",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "captures": {
+            "0": { "name": "punctuation.definition.comment.gosu" }
+          }
+        },
+        {
+          "name": "comment.line.double-slash.gosu",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.gosu",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "name": "constant.character.escape.gosu", "match": "\\\\." }
+          ]
+        },
+        {
+          "name": "string.quoted.single.gosu",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            { "name": "constant.character.escape.gosu", "match": "\\\\." }
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "name": "entity.other.inherited-class.gosu",
+      "match": "@\\w+"
+    },
+    "keywords-control": {
+      "name": "keyword.control.gosu",
+      "match": "\\b(if|else|try|catch|finally|throw|return|for|foreach|in|index|iterator|while|do|switch|case|default|break|continue|assert|using|eval)\\b"
+    },
+    "keywords-storage": {
+      "name": "storage.modifier.gosu",
+      "match": "\\b(private|internal|protected|public|static|abstract|override|final|transient|readonly)\\b"
+    },
+    "keywords-declaration": {
+      "name": "storage.type.gosu",
+      "match": "\\b(class|interface|enum|enhancement|extends|implements|represents|construct|function|property|var|delegate|get|set|as)\\b"
+    },
+    "keywords-other": {
+      "name": "keyword.other.gosu",
+      "match": "\\b(package|uses|new|this|super|typeis|typeas|typeof|statictypeof|block|or|and|not)\\b"
+    },
+    "builtin-types": {
+      "name": "support.type.gosu",
+      "match": "\\b(String|Integer|Long|Short|Byte|Float|Double|Boolean|Character|Number|BigDecimal|BigInteger|Object|void|List|Map|Set|Iterator|Iterable|Collection|Date|Exception|RuntimeException|Thread|Runnable)\\b"
+    },
+    "constants": {
+      "name": "constant.language.gosu",
+      "match": "\\b(true|false|null|NaN|Infinity)\\b"
+    },
+    "numbers": {
+      "name": "constant.numeric.gosu",
+      "match": "\\b(0[xX][0-9a-fA-F]+[lL]?|[0-9]+\\.?[0-9]*([eE][+-]?[0-9]+)?[fFdDlLbB]?)\\b"
+    },
+    "operators": {
+      "name": "keyword.operator.gosu",
+      "match": "(==|!=|<=|>=|<|>|&&|\\|\\||!|\\+\\+|--|\\+=|-=|\\*=|/=|%=|&=|\\|=|\\^=|\\?:|\\?\\.|\\.\\.|\\.\\.\\.|->|=>|=|\\+|-|\\*|/|%|&|\\||\\^|~|\\?|:)"
+    },
+    "class-declaration": {
+      "patterns": [
+        {
+          "match": "\\b(class|interface|enum|enhancement)\\s+(\\w+)",
+          "captures": {
+            "1": { "name": "storage.type.gosu" },
+            "2": { "name": "entity.name.type.gosu" }
+          }
+        }
+      ]
+    },
+    "function-declaration": {
+      "patterns": [
+        {
+          "match": "\\b(function|construct|property)\\s+(\\w+)",
+          "captures": {
+            "1": { "name": "storage.type.function.gosu" },
+            "2": { "name": "entity.name.function.gosu" }
+          }
+        }
+      ]
+    },
+    "identifiers": {
+      "patterns": [
+        {
+          "name": "entity.name.type.gosu",
+          "match": "\\b[A-Z][A-Za-z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}
