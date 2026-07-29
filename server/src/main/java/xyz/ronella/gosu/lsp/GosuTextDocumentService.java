@@ -1,10 +1,10 @@
-package com.gosu.lsp;
+package xyz.ronella.gosu.lsp;
 
-import com.gosu.lsp.analysis.DiagnosticsPublisher;
-import com.gosu.lsp.document.DocumentManager;
-import com.gosu.lsp.handlers.CompletionHandler;
-import com.gosu.lsp.handlers.DefinitionHandler;
-import com.gosu.lsp.handlers.HoverHandler;
+import xyz.ronella.gosu.lsp.analysis.DiagnosticsPublisher;
+import xyz.ronella.gosu.lsp.document.DocumentManager;
+import xyz.ronella.gosu.lsp.handlers.CompletionHandler;
+import xyz.ronella.gosu.lsp.handlers.DefinitionHandler;
+import xyz.ronella.gosu.lsp.handlers.HoverHandler;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;

@@ -1,7 +1,7 @@
-package com.gosu.lsp.analysis;
+package xyz.ronella.gosu.lsp.analysis;
 
-import com.gosu.lsp.grammar.GosuLanguageLexer;
-import com.gosu.lsp.grammar.GosuLanguageParser;
+import xyz.ronella.gosu.lsp.grammar.GosuLanguageLexer;
+import xyz.ronella.gosu.lsp.grammar.GosuLanguageParser;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 

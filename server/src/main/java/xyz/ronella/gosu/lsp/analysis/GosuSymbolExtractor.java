@@ -1,4 +1,4 @@
-package com.gosu.lsp.analysis;
+package xyz.ronella.gosu.lsp.analysis;
 
 import java.util.*;
 import java.util.regex.*;

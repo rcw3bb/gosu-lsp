@@ -1,4 +1,4 @@
-package com.gosu.lsp;
+package xyz.ronella.gosu.lsp;
 
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;

@@ -1,8 +1,8 @@
-package com.gosu.lsp.handlers;
+package xyz.ronella.gosu.lsp.handlers;
 
-import com.gosu.lsp.analysis.GosuSymbolExtractor;
-import com.gosu.lsp.analysis.GosuSymbolExtractor.Symbol;
-import com.gosu.lsp.document.DocumentManager;
+import xyz.ronella.gosu.lsp.analysis.GosuSymbolExtractor;
+import xyz.ronella.gosu.lsp.analysis.GosuSymbolExtractor.Symbol;
+import xyz.ronella.gosu.lsp.document.DocumentManager;
 import org.eclipse.lsp4j.*;
 
 import java.util.*;
