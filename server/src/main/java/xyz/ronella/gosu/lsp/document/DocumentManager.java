@@ -1,4 +1,4 @@
-package com.gosu.lsp.document;
+package xyz.ronella.gosu.lsp.document;
 
 import java.util.Collections;
 import java.util.Map;

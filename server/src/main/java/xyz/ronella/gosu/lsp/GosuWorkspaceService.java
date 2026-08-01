@@ -1,4 +1,4 @@
-package com.gosu.lsp;
+package xyz.ronella.gosu.lsp;
 
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.services.LanguageClient;

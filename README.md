@@ -1,7 +1,7 @@
 # Gosu LSP
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](CHANGELOG.md)
 
 A Language Server Protocol (LSP) implementation for the [Gosu programming language](https://gosu-lang.github.io/), providing Java-like IDE features for `.gs` and `.gsx` files in VS Code.
 
@@ -9,9 +9,11 @@ A Language Server Protocol (LSP) implementation for the [Gosu programming langua
 
 - **Syntax highlighting** — TextMate grammar covering keywords, types, strings, comments, annotations, and operators
 - **Diagnostics** — real-time syntax errors via an ANTLR4 parser
-- **Code completion** — Gosu keywords, built-in types, and symbols declared in the current file
+- **Code completion** — Gosu keywords, built-in types, symbols declared in the current file, and type-aware member completions (triggered by `.`)
 - **Hover** — shows the declaration signature of the symbol under the cursor
 - **Go-to-definition** — jumps to the declaration of any symbol, including across open files
+- **Find all references** — locates every usage of a symbol across all open documents
+- **Rename symbol** — renames a symbol and all its occurrences in every open file
 - **Document outline** — lists all classes, functions, properties, and variables in the file
 
 ## Requirements
@@ -40,13 +42,16 @@ gosu-lsp/
 │           ├── analysis/
 │           │   ├── GosuSourceParser.java
 │           │   ├── DiagnosticsPublisher.java
-│           │   └── GosuSymbolExtractor.java
+│           │   ├── GosuSymbolExtractor.java
+│           │   └── GosuTypeProvider.java
 │           ├── document/
 │           │   └── DocumentManager.java
 │           └── handlers/
 │               ├── CompletionHandler.java
 │               ├── HoverHandler.java
-│               └── DefinitionHandler.java
+│               ├── DefinitionHandler.java
+│               ├── ReferencesHandler.java
+│               └── RenameHandler.java
 ├── client/                          # TypeScript VS Code extension
 │   ├── package.json
 │   ├── tsconfig.json
@@ -127,33 +132,36 @@ Or in VS Code: **Extensions** → `...` menu → **Install from VSIX…** → se
 
 ## Architecture
 
-```
-VS Code (TypeScript extension)
-        │  stdin / stdout (JSON-RPC over stdio)
-        ▼
-GosuLanguageServerLauncher (java -jar gosu-lsp-server.jar)
-        │
-        ▼
-GosuLanguageServer  ──── GosuTextDocumentService
-        │                        │
-        │                DocumentManager (in-memory store)
-        │                DiagnosticsPublisher → ANTLR4 parse
-        │                CompletionHandler
-        │                HoverHandler
-        │                DefinitionHandler
-        └───── GosuWorkspaceService
+```mermaid
+graph TD
+    VSCode["VS Code\n(TypeScript extension)"] -- "stdin/stdout JSON-RPC" --> Launcher
+    Launcher[GosuLanguageServerLauncher] --> Server[GosuLanguageServer]
+    Server --> TDS[GosuTextDocumentService]
+    Server --> WS[GosuWorkspaceService]
+    TDS --> DM[DocumentManager]
+    TDS --> DP[DiagnosticsPublisher]
+    DP --> ANTLR[ANTLR4 Parser]
+    TDS --> CH[CompletionHandler]
+    TDS --> HH[HoverHandler]
+    TDS --> DH[DefinitionHandler]
+    TDS --> RH[ReferencesHandler]
+    TDS --> RN[RenameHandler]
+    CH --> GTP[GosuTypeProvider]
+    GTP --> Reflect[Java Reflection]
+    GTP --> GosuRT[Gosu Runtime]
 ```
 
 The server communicates over **stdio** using the [LSP 3.18 specification](https://microsoft.github.io/language-server-protocol/specifications/lsp/3.18/specification/).  
-The grammar is implemented with **ANTLR4 4.13.2**, based on the [Gosu EBNF grammar](https://gosu-lang.github.io/grammar.html).
+The grammar is implemented with **ANTLR4 4.13.2**, based on the [Gosu EBNF grammar](https://gosu-lang.github.io/grammar.html).  
+Type-aware completions use Java reflection for JDK types and the Gosu runtime (`gosu-core`) for Gosu-specific types, with graceful fallback if the runtime cannot initialise.
 
 ## Roadmap
 
-| Phase | Scope |
-|---|---|
-| **1 (current)** | Syntax highlighting, diagnostics, completion, hover, go-to-definition |
-| **2** | Type-aware completions via Gosu runtime, rename symbol, find all references |
-| **3** | Format document, code actions, inlay hints |
+| Phase | Scope | Status |
+|---|---|---|
+| **1** | Syntax highlighting, diagnostics, completion, hover, go-to-definition | ✅ Done |
+| **2** | Type-aware completions, rename symbol, find all references | ✅ Done |
+| **3** | Format document, code actions, inlay hints | Planned |
 
 ## License
 
