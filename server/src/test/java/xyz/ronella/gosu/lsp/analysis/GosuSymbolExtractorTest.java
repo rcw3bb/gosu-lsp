@@ -233,4 +233,67 @@ class GosuSymbolExtractorTest {
         List<GosuSymbolExtractor.Symbol> result = extractor.extractWithPrefix(src, "Al");
         assertEquals(2, result.size());
     }
+
+    // ── findOccurrences ───────────────────────────────────────────────────
+
+    @Test
+    void findOccurrences_nullContent_returnsEmpty() {
+        assertTrue(extractor.findOccurrences(null, "Foo").isEmpty());
+    }
+
+    @Test
+    void findOccurrences_emptyContent_returnsEmpty() {
+        assertTrue(extractor.findOccurrences("", "Foo").isEmpty());
+    }
+
+    @Test
+    void findOccurrences_emptyWord_returnsEmpty() {
+        assertTrue(extractor.findOccurrences("class Foo {}", "").isEmpty());
+    }
+
+    @Test
+    void findOccurrences_singleOccurrence_returnsOneRange() {
+        String src = "class Foo {}";
+        List<org.eclipse.lsp4j.Range> ranges = extractor.findOccurrences(src, "Foo");
+        assertEquals(1, ranges.size());
+        assertEquals(0, ranges.get(0).getStart().getLine());
+        assertEquals(6, ranges.get(0).getStart().getCharacter());
+    }
+
+    @Test
+    void findOccurrences_multipleOccurrences_returnsAll() {
+        String src = "class Foo {}\nvar x : Foo = null";
+        List<org.eclipse.lsp4j.Range> ranges = extractor.findOccurrences(src, "Foo");
+        assertEquals(2, ranges.size());
+    }
+
+    @Test
+    void findOccurrences_wholeWordOnly_doesNotMatchSubstring() {
+        String src = "class FooBar {}\nvar x : Foo = null";
+        List<org.eclipse.lsp4j.Range> ranges = extractor.findOccurrences(src, "Foo");
+        // "FooBar" must NOT be included; only the standalone "Foo"
+        assertEquals(1, ranges.size());
+        assertEquals(1, ranges.get(0).getStart().getLine());
+    }
+
+    @Test
+    void findOccurrences_rangeCoversExactWord() {
+        String src = "var count : Integer";
+        List<org.eclipse.lsp4j.Range> ranges = extractor.findOccurrences(src, "count");
+        assertEquals(1, ranges.size());
+        org.eclipse.lsp4j.Range r = ranges.get(0);
+        assertEquals(0, r.getStart().getLine());
+        assertEquals(4, r.getStart().getCharacter());
+        assertEquals(9, r.getEnd().getCharacter()); // "count" = 5 chars
+    }
+
+    @Test
+    void findOccurrences_multiLine_correctLineNumbers() {
+        String src = "class Alpha {}\nclass Beta {}\nvar x : Alpha = null";
+        List<org.eclipse.lsp4j.Range> ranges = extractor.findOccurrences(src, "Alpha");
+        assertEquals(2, ranges.size());
+        assertEquals(0, ranges.get(0).getStart().getLine());
+        assertEquals(2, ranges.get(1).getStart().getLine());
+    }
 }
+

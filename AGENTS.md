@@ -14,9 +14,9 @@ This repo is a Language Server Protocol (LSP) implementation for the [Gosu progr
 - `server/build.gradle` — server build: ANTLR4, Shadow JAR, JUnit 5, Mockito, JaCoCo
 - `server/src/main/antlr/xyz/ronella/gosu/lsp/GosuLanguage.g4` — ANTLR4 grammar (generated classes excluded from JaCoCo)
 - `server/src/main/java/xyz/ronella/gosu/lsp/` — root LSP classes (server, launcher, text/workspace services)
-- `server/src/main/java/xyz/ronella/gosu/lsp/analysis/` — parser, diagnostics, symbol extractor
+- `server/src/main/java/xyz/ronella/gosu/lsp/analysis/` — parser, diagnostics, symbol extractor, type provider
 - `server/src/main/java/xyz/ronella/gosu/lsp/document/` — in-memory document store
-- `server/src/main/java/xyz/ronella/gosu/lsp/handlers/` — completion, hover, definition handlers
+- `server/src/main/java/xyz/ronella/gosu/lsp/handlers/` — completion, hover, definition, references, rename handlers
 - `server/src/test/java/xyz/ronella/gosu/lsp/` — JUnit 5 unit tests mirroring main structure
 - `client/` — TypeScript VS Code extension (activates on `.gs`/`.gsx`, launches server JAR)
 - `client/src/extension.ts` — extension entry point
@@ -46,3 +46,5 @@ This repo is a Language Server Protocol (LSP) implementation for the [Gosu progr
 - Write to the matching section of this file under Rules; one dated line, plain language.
   e.g. `Always rebuild the shadow JAR before testing the client extension end-to-end (learned 2026-07-29)`
 - 3+ related notes on the same topic → create a `docs/` context file, move notes there, update the Tree. Keep this file under 100 lines.
+- The `gosu-core` dependency brings in Java 25 class files that cause JaCoCo 0.8.11 to log instrumentation warnings; these are harmless and do not fail the build (learned 2026-08-02)
+- When replacing large Java files with replace_string_in_file, the old tail content may remain; use PowerShell Set-Content to rewrite the file cleanly instead (learned 2026-08-02)

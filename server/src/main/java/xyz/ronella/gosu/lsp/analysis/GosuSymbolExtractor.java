@@ -1,5 +1,8 @@
 package xyz.ronella.gosu.lsp.analysis;
 
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
+
 import java.util.*;
 import java.util.regex.*;
 
@@ -127,6 +130,27 @@ public class GosuSymbolExtractor {
         String name = m.group(1);
         String type = m.groupCount() >= 2 ? m.group(2) : null;
         return new Symbol(name, type != null ? type.trim() : null, SymbolKind.VARIABLE, line, col);
+    }
+
+    /**
+     * Returns all ranges where {@code word} appears as a whole identifier in {@code content}.
+     * Uses word-boundary matching to avoid false positives (e.g., "Foo" won't match "FooBar").
+     */
+    public List<Range> findOccurrences(String content, String word) {
+        if (content == null || content.isEmpty() || word == null || word.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Range> ranges = new ArrayList<>();
+        Pattern pattern = Pattern.compile("\\b" + Pattern.quote(word) + "\\b");
+        Matcher m = pattern.matcher(content);
+        while (m.find()) {
+            int line = lineOf(content, m.start());
+            int col  = m.start() - lineStart(content, m.start());
+            ranges.add(new Range(
+                    new Position(line, col),
+                    new Position(line, col + word.length())));
+        }
+        return ranges;
     }
 
     /** Returns the 0-based line number for the given character offset. */

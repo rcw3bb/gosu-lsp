@@ -193,6 +193,41 @@ class GosuTextDocumentServiceTest {
         assertDoesNotThrow(() -> service.shutdown());
     }
 
+    @Test
+    void rename_returnsNonNullFuture() throws Exception {
+        service.didOpen(openParams("file:///foo.gs", "class Foo {}"));
+        RenameParams params = new RenameParams();
+        params.setTextDocument(new TextDocumentIdentifier("file:///foo.gs"));
+        params.setPosition(new Position(0, 6));
+        params.setNewName("Bar");
+        CompletableFuture<WorkspaceEdit> future = service.rename(params);
+        assertNotNull(future);
+        assertNotNull(future.get());
+    }
+
+    @Test
+    void references_returnsNonNullFuture() throws Exception {
+        service.didOpen(openParams("file:///foo.gs", "class Foo {}"));
+        ReferenceParams params = new ReferenceParams();
+        params.setTextDocument(new TextDocumentIdentifier("file:///foo.gs"));
+        params.setPosition(new Position(0, 6));
+        params.setContext(new ReferenceContext(true));
+        CompletableFuture<List<? extends Location>> future = service.references(params);
+        assertNotNull(future);
+        assertNotNull(future.get());
+    }
+
+    @Test
+    void prepareRename_returnsNonNullFuture() throws Exception {
+        service.didOpen(openParams("file:///foo.gs", "class Foo {}"));
+        PrepareRenameParams params = new PrepareRenameParams();
+        params.setTextDocument(new TextDocumentIdentifier("file:///foo.gs"));
+        params.setPosition(new Position(0, 6));
+        CompletableFuture<?> future = service.prepareRename(params);
+        assertNotNull(future);
+        future.get(); // must complete without exception
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private static DidOpenTextDocumentParams openParams(String uri, String text) {

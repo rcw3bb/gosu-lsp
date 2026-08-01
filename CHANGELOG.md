@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.2.0 - 2026-08-02
+
+### Added
+- **Find All References** (`textDocument/references`) — locates every occurrence of the symbol under the cursor across all open documents, with optional declaration inclusion/exclusion
+- **Rename Symbol** (`textDocument/rename` + `textDocument/prepareRename`) — renames a symbol in all open files; returns the identifier range on `prepareRename`
+- **Type-aware dot completions** — when typing `receiver.`, the server resolves the declared type of the receiver variable and returns its members via Java reflection (JDK types) or the Gosu runtime type system (`gosu-core`)
+- `GosuSymbolExtractor.findOccurrences()` — word-boundary regex occurrence search used by References and Rename
+- `GosuTypeProvider` — two-tier type member resolver (Java reflection first, Gosu runtime fallback); degrades gracefully if Gosu runtime cannot initialize
+- New handlers: `ReferencesHandler`, `RenameHandler`
+- `gosu-core:1.18.5` runtime dependency for Gosu-specific type introspection
+- 28 new unit tests covering all new features; total test count: 162
+
 ## 0.1.0 - 2026-07-26
 
 ### Added

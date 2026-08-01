@@ -5,8 +5,11 @@ import xyz.ronella.gosu.lsp.document.DocumentManager;
 import xyz.ronella.gosu.lsp.handlers.CompletionHandler;
 import xyz.ronella.gosu.lsp.handlers.DefinitionHandler;
 import xyz.ronella.gosu.lsp.handlers.HoverHandler;
+import xyz.ronella.gosu.lsp.handlers.RenameHandler;
+import xyz.ronella.gosu.lsp.handlers.ReferencesHandler;
 import org.eclipse.lsp4j.*;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.jsonrpc.messages.Either3;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
@@ -27,6 +30,8 @@ public class GosuTextDocumentService implements TextDocumentService {
     private final CompletionHandler completionHandler = new CompletionHandler(documents);
     private final HoverHandler hoverHandler = new HoverHandler(documents);
     private final DefinitionHandler definitionHandler = new DefinitionHandler(documents);
+    private final RenameHandler renameHandler = new RenameHandler(documents);
+    private final ReferencesHandler referencesHandler = new ReferencesHandler(documents);
 
     private LanguageClient client;
 
@@ -130,6 +135,42 @@ public class GosuTextDocumentService implements TextDocumentService {
         return CompletableFuture.supplyAsync(() ->
                 hoverHandler.documentSymbols(params.getTextDocument().getUri())
         );
+    }
+
+    @Override
+    public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
+        return CompletableFuture.supplyAsync(() ->
+                referencesHandler.references(
+                        params.getTextDocument().getUri(),
+                        params.getPosition(),
+                        params.getContext().isIncludeDeclaration()
+                )
+        );
+    }
+
+    @Override
+    public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
+        return CompletableFuture.supplyAsync(() ->
+                renameHandler.rename(
+                        params.getTextDocument().getUri(),
+                        params.getPosition(),
+                        params.getNewName()
+                )
+        );
+    }
+
+    @Override
+    public CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> prepareRename(
+            PrepareRenameParams params) {
+        return CompletableFuture.supplyAsync(() -> {
+            Range range = renameHandler.prepareRename(
+                    params.getTextDocument().getUri(),
+                    params.getPosition()
+            );
+            return range != null
+                    ? Either3.forFirst(range)
+                    : Either3.forThird(new PrepareRenameDefaultBehavior(false));
+        });
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────

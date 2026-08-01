@@ -83,4 +83,42 @@ class CompletionHandlerTest {
         // character position beyond line — should not throw
         assertDoesNotThrow(() -> handler.complete("file:///foo.gs", new Position(0, 999)));
     }
+
+    // ── Dot-triggered type-aware completions ──────────────────────────────
+
+    @Test
+    void complete_dotTrigger_noKnownType_doesNotThrow() {
+        String src = "var x = something\nx.";
+        documents.open("file:///foo.gs", src);
+        assertDoesNotThrow(() -> handler.complete("file:///foo.gs", new Position(1, 2)));
+    }
+
+    @Test
+    void complete_dotTrigger_withKnownStringType_returnsTypeMembers() {
+        String src = "var name : String = \"hello\"\nname.";
+        documents.open("file:///foo.gs", src);
+        // cursor right after '.' on line 1, 'name' is declared as String
+        List<CompletionItem> items = handler.complete("file:///foo.gs", new Position(1, 5));
+        assertFalse(items.isEmpty(), "String members should be returned for dot-completion");
+        assertTrue(items.stream().anyMatch(i -> i.getLabel().startsWith("length")),
+                "String.length() should appear in completions");
+    }
+
+    @Test
+    void complete_dotTrigger_partialMember_returnsTypeMembers() {
+        String src = "var count : Integer = 0\ncount.parse";
+        documents.open("file:///foo.gs", src);
+        // cursor after "parse" on line 1 — still type-triggered
+        List<CompletionItem> items = handler.complete("file:///foo.gs", new Position(1, 11));
+        assertFalse(items.isEmpty());
+    }
+
+    @Test
+    void complete_dotTrigger_undeclaredReceiver_returnsNonTypeItems() {
+        String src = "undeclared.";
+        documents.open("file:///foo.gs", src);
+        // No type info available — falls through to keyword/builtin completion
+        assertDoesNotThrow(() -> handler.complete("file:///foo.gs", new Position(0, 11)));
+    }
 }
+

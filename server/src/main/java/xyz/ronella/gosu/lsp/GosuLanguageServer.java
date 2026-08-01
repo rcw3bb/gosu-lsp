@@ -59,7 +59,14 @@ public class GosuLanguageServer implements LanguageServer, LanguageClientAware {
         symOpts.setLabel("Gosu");
         caps.setDocumentSymbolProvider(symOpts);
 
-        ServerInfo info = new ServerInfo("Gosu Language Server", "0.1.0");
+        // --- Find all references ---
+        caps.setReferencesProvider(true);
+
+        // --- Rename symbol (prepareRename supported) ---
+        RenameOptions renameOpts = new RenameOptions(true);
+        caps.setRenameProvider(renameOpts);
+
+        ServerInfo info = new ServerInfo("Gosu Language Server", "0.2.0");
         InitializeResult result = new InitializeResult(caps);
         result.setServerInfo(info);
         return CompletableFuture.completedFuture(result);
