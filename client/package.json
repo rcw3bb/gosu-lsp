@@ -1,6 +1,6 @@
 {
   "name": "gosu-lsp",
-  "displayName": "Gosu Language Support",
+  "displayName": "Gosu Programming Language Support",
   "description": "Language support for Gosu (.gs, .gsx) files — syntax highlighting, diagnostics, completion, hover, and go-to-definition via LSP.",
   "version": "0.3.0",
   "publisher": "ronella",
