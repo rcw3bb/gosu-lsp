@@ -16,12 +16,14 @@ public class GosuSourceParser {
 
     // ── Parse result ────────────────────────────────────────────────────
 
+    /** Holds the parse tree, token stream, and any syntax errors from a single parse. */
     public static final class ParseResult {
         public final GosuLanguageParser.CompilationUnitContext tree;
         public final List<ParseError> errors;
         public final GosuLanguageParser parser;
         public final CommonTokenStream tokens;
 
+        /** Constructs a result with the given tree, errors, parser state, and token stream. */
         public ParseResult(GosuLanguageParser.CompilationUnitContext tree,
                            List<ParseError> errors,
                            GosuLanguageParser parser,
@@ -32,6 +34,7 @@ public class GosuSourceParser {
             this.tokens = tokens;
         }
 
+        /** Returns {@code true} if the source had one or more syntax errors. */
         public boolean hasErrors() {
             return !errors.isEmpty();
         }
@@ -39,6 +42,7 @@ public class GosuSourceParser {
 
     // ── Parse error ──────────────────────────────────────────────────────
 
+    /** Describes a single ANTLR4 syntax error (line, column, message). */
     public static final class ParseError {
         /** 1-based line number as reported by ANTLR. */
         public final int line;
@@ -46,6 +50,7 @@ public class GosuSourceParser {
         public final int charPositionInLine;
         public final String message;
 
+        /** Creates a parse error at the given 1-based line, 0-based column, with the ANTLR message. */
         public ParseError(int line, int charPositionInLine, String message) {
             this.line               = line;
             this.charPositionInLine = charPositionInLine;
@@ -55,6 +60,7 @@ public class GosuSourceParser {
 
     // ── Main parse method ────────────────────────────────────────────────
 
+    /** Parses {@code content} and returns the tree, token stream, and any syntax errors. */
     public ParseResult parse(String content) {
         CharStream input = CharStreams.fromString(content != null ? content : "");
 

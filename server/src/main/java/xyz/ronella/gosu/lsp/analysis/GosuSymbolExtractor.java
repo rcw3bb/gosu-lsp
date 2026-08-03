@@ -31,17 +31,15 @@ public class GosuSymbolExtractor {
             "\\b(class|interface|enum|enhancement)\\s+(\\w+)",
             Pattern.MULTILINE);
 
-    private static final Pattern FIELD_DECL = Pattern.compile(
-            "\\bvar\\s+(\\w+)(?:\\s+as\\s+(?:readonly\\s+)?(\\w+))?",
-            Pattern.MULTILINE);
-
     // ── Symbol model ─────────────────────────────────────────────────────
 
+    /** Classifies the kind of a declared symbol in Gosu source. */
     public enum SymbolKind {
         CLASS, INTERFACE, ENUM, ENHANCEMENT,
         FUNCTION, PROPERTY, VARIABLE, FIELD
     }
 
+    /** An immutable descriptor for a named symbol extracted from Gosu source. */
     public static final class Symbol {
         public final String name;
         public final String type;       // may be null
@@ -50,6 +48,7 @@ public class GosuSymbolExtractor {
         public final int line;
         public final int startChar;
 
+        /** Constructs a symbol with the given name, optional type, kind, and source location. */
         public Symbol(String name, String type, SymbolKind kind, int line, int startChar) {
             this.name      = name;
             this.type      = type;
@@ -61,6 +60,7 @@ public class GosuSymbolExtractor {
 
     // ── Extraction ────────────────────────────────────────────────────────
 
+    /** Extracts all named symbols from {@code content} via regex-based pattern matching. */
     public List<Symbol> extract(String content) {
         if (content == null || content.isEmpty()) return Collections.emptyList();
         List<Symbol> symbols = new ArrayList<>();
@@ -87,8 +87,10 @@ public class GosuSymbolExtractor {
 
     // ── Helpers ───────────────────────────────────────────────────────────
 
+    /** Converts a regex {@link java.util.regex.Matcher} match at a source position to a {@link Symbol}. */
     @FunctionalInterface
     private interface MatchToSymbol {
+        /** Maps a match at the given line/column to a symbol, or {@code null} to skip. */
         Symbol apply(Matcher m, int line, int startChar);
     }
 

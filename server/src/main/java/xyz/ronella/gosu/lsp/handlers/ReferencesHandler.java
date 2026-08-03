@@ -19,10 +19,12 @@ public class ReferencesHandler {
     private final DocumentManager documents;
     private final GosuSymbolExtractor extractor = new GosuSymbolExtractor();
 
+    /** Creates a new {@code ReferencesHandler} backed by the given {@link DocumentManager}. */
     public ReferencesHandler(DocumentManager documents) {
         this.documents = documents;
     }
 
+    /** Returns all reference locations for the symbol at {@code position} in {@code uri}. */
     public List<Location> references(String uri, Position position, boolean includeDeclaration) {
         String content = documents.getContent(uri);
         if (content == null) return Collections.emptyList();

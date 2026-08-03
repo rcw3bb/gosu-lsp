@@ -14,13 +14,17 @@ public class GosuWorkspaceService implements WorkspaceService {
 
     private static final Logger LOG = Logger.getLogger(GosuWorkspaceService.class.getName());
 
+    @SuppressWarnings("PMD.UnusedPrivateField")
     private final GosuLanguageServer server;
+    @SuppressWarnings("PMD.UnusedPrivateField")
     private LanguageClient client;
 
+    /** Creates a service attached to the given parent {@link GosuLanguageServer}. */
     public GosuWorkspaceService(GosuLanguageServer server) {
         this.server = server;
     }
 
+    /** Wires the given {@link LanguageClient} for future workspace notifications. */
     public void connect(LanguageClient client) {
         this.client = client;
     }

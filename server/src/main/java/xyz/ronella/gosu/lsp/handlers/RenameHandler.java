@@ -17,6 +17,7 @@ public class RenameHandler {
     private final DocumentManager documents;
     private final GosuSymbolExtractor extractor = new GosuSymbolExtractor();
 
+    /** Creates a new {@code RenameHandler} backed by the given {@link DocumentManager}. */
     public RenameHandler(DocumentManager documents) {
         this.documents = documents;
     }
@@ -55,6 +56,7 @@ public class RenameHandler {
         return null;
     }
 
+    /** Renames every occurrence of the symbol at {@code position} to {@code newName} across all open files. */
     public WorkspaceEdit rename(String uri, Position position, String newName) {
         String content = documents.getContent(uri);
         if (content == null || newName == null || newName.isBlank()) {

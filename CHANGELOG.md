@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 - 2026-08-02
+
+### Added
+- **Format Document** (`textDocument/formatting`) — reformats the entire file with consistent indentation (default 4 spaces; tab size and insert-spaces flags honoured from client `FormattingOptions`) and spacing rules via ANTLR4 token-stream pass
+- **Range Formatting** (`textDocument/rangeFormatting`) — formats only the selected line range
+- **Code Actions** (`textDocument/codeAction`) — produces `QuickFix` actions for ANTLR4 diagnostic messages: inserts missing `;` and removes extraneous/mismatched tokens
+- **Inlay Hints** (`textDocument/inlayHint`) — type hints after `var` declarations whose type is known (`var x: String`) and parameter-name hints before call-site arguments for functions declared in the same file
+- New handlers: `FormattingHandler`, `CodeActionHandler`, `InlayHintHandler`
+- 30 new unit tests covering all Phase 3 handlers
+
 ## 0.2.0 - 2026-08-02
 
 ### Added

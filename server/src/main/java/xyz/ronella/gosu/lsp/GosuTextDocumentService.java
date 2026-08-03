@@ -2,9 +2,12 @@ package xyz.ronella.gosu.lsp;
 
 import xyz.ronella.gosu.lsp.analysis.DiagnosticsPublisher;
 import xyz.ronella.gosu.lsp.document.DocumentManager;
+import xyz.ronella.gosu.lsp.handlers.CodeActionHandler;
 import xyz.ronella.gosu.lsp.handlers.CompletionHandler;
 import xyz.ronella.gosu.lsp.handlers.DefinitionHandler;
+import xyz.ronella.gosu.lsp.handlers.FormattingHandler;
 import xyz.ronella.gosu.lsp.handlers.HoverHandler;
+import xyz.ronella.gosu.lsp.handlers.InlayHintHandler;
 import xyz.ronella.gosu.lsp.handlers.RenameHandler;
 import xyz.ronella.gosu.lsp.handlers.ReferencesHandler;
 import org.eclipse.lsp4j.*;
@@ -24,21 +27,27 @@ public class GosuTextDocumentService implements TextDocumentService {
 
     private static final Logger LOG = Logger.getLogger(GosuTextDocumentService.class.getName());
 
+    @SuppressWarnings("PMD.UnusedPrivateField")
     private final GosuLanguageServer server;
     private final DocumentManager documents = new DocumentManager();
     private final DiagnosticsPublisher diagnostics = new DiagnosticsPublisher();
-    private final CompletionHandler completionHandler = new CompletionHandler(documents);
-    private final HoverHandler hoverHandler = new HoverHandler(documents);
-    private final DefinitionHandler definitionHandler = new DefinitionHandler(documents);
-    private final RenameHandler renameHandler = new RenameHandler(documents);
-    private final ReferencesHandler referencesHandler = new ReferencesHandler(documents);
+    private final CompletionHandler completionHandler   = new CompletionHandler(documents);
+    private final HoverHandler hoverHandler             = new HoverHandler(documents);
+    private final DefinitionHandler definitionHandler   = new DefinitionHandler(documents);
+    private final RenameHandler renameHandler           = new RenameHandler(documents);
+    private final ReferencesHandler referencesHandler   = new ReferencesHandler(documents);
+    private final FormattingHandler formattingHandler   = new FormattingHandler(documents);
+    private final CodeActionHandler codeActionHandler   = new CodeActionHandler();
+    private final InlayHintHandler inlayHintHandler     = new InlayHintHandler(documents);
 
     private LanguageClient client;
 
+    /** Creates a service attached to the given parent {@link GosuLanguageServer}. */
     public GosuTextDocumentService(GosuLanguageServer server) {
         this.server = server;
     }
 
+    /** Wires the given {@link LanguageClient} to enable diagnostics publishing. */
     public void connect(LanguageClient client) {
         this.client = client;
         diagnostics.connect(client);
@@ -173,6 +182,45 @@ public class GosuTextDocumentService implements TextDocumentService {
         });
     }
 
+    @Override
+    public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
+        return CompletableFuture.supplyAsync(() ->
+                formattingHandler.format(
+                        params.getTextDocument().getUri(),
+                        params.getOptions())
+        );
+    }
+
+    @Override
+    public CompletableFuture<List<? extends TextEdit>> rangeFormatting(
+            DocumentRangeFormattingParams params) {
+        return CompletableFuture.supplyAsync(() ->
+                formattingHandler.formatRange(
+                        params.getTextDocument().getUri(),
+                        params.getRange(),
+                        params.getOptions())
+        );
+    }
+
+    @Override
+    public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
+        return CompletableFuture.supplyAsync(() ->
+                codeActionHandler.getActions(
+                        params.getTextDocument().getUri(),
+                        params.getRange(),
+                        params.getContext().getDiagnostics())
+        );
+    }
+
+    @Override
+    public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params) {
+        return CompletableFuture.supplyAsync(() ->
+                inlayHintHandler.getHints(
+                        params.getTextDocument().getUri(),
+                        params.getRange())
+        );
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────
 
     /**
@@ -206,6 +254,7 @@ public class GosuTextDocumentService implements TextDocumentService {
         return offset + Math.min(character, line < lines.length ? lines[line].length() : 0);
     }
 
+    /** Releases background resources held by this service. */
     public void shutdown() {
         // Nothing to tear down for now
     }

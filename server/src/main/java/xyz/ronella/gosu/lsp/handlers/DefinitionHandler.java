@@ -21,10 +21,12 @@ public class DefinitionHandler {
     private final DocumentManager documents;
     private final GosuSymbolExtractor extractor = new GosuSymbolExtractor();
 
+    /** Creates a new {@code DefinitionHandler} backed by the given {@link DocumentManager}. */
     public DefinitionHandler(DocumentManager documents) {
         this.documents = documents;
     }
 
+    /** Returns declaration locations for the symbol at {@code position} in {@code uri}. */
     public List<Location> definition(String uri, Position position) {
         List<Location> results = new ArrayList<>();
 

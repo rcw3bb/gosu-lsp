@@ -59,10 +59,12 @@ public class CompletionHandler {
     private final GosuSymbolExtractor extractor = new GosuSymbolExtractor();
     private final GosuTypeProvider typeProvider = new GosuTypeProvider();
 
+    /** Creates a new {@code CompletionHandler} backed by the given {@link DocumentManager}. */
     public CompletionHandler(DocumentManager documents) {
         this.documents = documents;
     }
 
+    /** Returns completion items for the cursor position in the document at {@code uri}. */
     public List<CompletionItem> complete(String uri, Position position) {
         String content = documents.getContent(uri);
 

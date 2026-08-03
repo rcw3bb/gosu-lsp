@@ -22,6 +22,7 @@ public class GosuLanguageServer implements LanguageServer, LanguageClientAware {
     /** 0 = shutdown was requested; 1 = still running */
     private int exitCode = 1;
 
+    /** Creates the server and wires up the text-document and workspace services. */
     public GosuLanguageServer() {
         textDocumentService = new GosuTextDocumentService(this);
         workspaceService    = new GosuWorkspaceService(this);
@@ -66,7 +67,20 @@ public class GosuLanguageServer implements LanguageServer, LanguageClientAware {
         RenameOptions renameOpts = new RenameOptions(true);
         caps.setRenameProvider(renameOpts);
 
-        ServerInfo info = new ServerInfo("Gosu Language Server", "0.2.0");
+        // --- Format document / range ---
+        caps.setDocumentFormattingProvider(true);
+        caps.setDocumentRangeFormattingProvider(true);
+
+        // --- Code actions (quick fixes) ---
+        CodeActionOptions caOpts = new CodeActionOptions(List.of(CodeActionKind.QuickFix));
+        caps.setCodeActionProvider(caOpts);
+
+        // --- Inlay hints ---
+        InlayHintRegistrationOptions ihOpts = new InlayHintRegistrationOptions();
+        ihOpts.setResolveProvider(false);
+        caps.setInlayHintProvider(ihOpts);
+
+        ServerInfo info = new ServerInfo("Gosu Language Server", "0.3.0");
         InitializeResult result = new InitializeResult(caps);
         result.setServerInfo(info);
         return CompletableFuture.completedFuture(result);
