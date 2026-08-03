@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 - 2026-08-03
+
+### Fixed
+- Corrected `publisher` field in `client/package.json` from `gosu-lsp` to `ronella` to match VS Marketplace publisher ID
+- Updated extension `displayName` to `Gosu Programming Language Support` to satisfy VS Marketplace uniqueness requirements
+- `build-vsix.ps1` now copies the root `README.md` into `client/` before packaging so the published extension shows its README on the Marketplace
+
 ## 0.3.0 - 2026-08-02
 
 ### Added
