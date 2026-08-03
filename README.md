@@ -91,6 +91,16 @@ npm run compile
 
 Compiled JavaScript is written to `client/out/` (configured in `client/tsconfig.json`).
 
+### 3 — Build the VSIX in one step
+
+The `build-vsix.ps1` script at the repo root chains steps 1 and 2 together and produces the packaged extension:
+
+```powershell
+.\build-vsix.ps1
+```
+
+The resulting `.vsix` file is written to `client/`.
+
 ## Installing the Extension
 
 ### Option A — Install directly from the compiled output (quickest)
@@ -105,14 +115,22 @@ Or in VS Code: **Extensions** → `...` menu → **Install from VSIX…** → se
 
 ### Option B — Package as a VSIX then install
 
-1. Install the VS Code Extension Manager globally (once):
+The quickest way is the all-in-one script (no global tools required):
+
+```powershell
+.\build-vsix.ps1
+```
+
+Or manually:
+
+1. Build and copy the server JAR:
    ```bat
-   npm install -g @vscode/vsce
+   .\gradlew.bat :server:copyServerJar
    ```
-2. Package:
+2. Package the extension (`@vscode/vsce` is fetched automatically via `npx`):
    ```bat
    cd client
-   vsce package
+   npx --yes @vscode/vsce package
    ```
    This produces `client/gosu-lsp-<version>.vsix`.
 3. Install:
@@ -120,8 +138,6 @@ Or in VS Code: **Extensions** → `...` menu → **Install from VSIX…** → se
    code --install-extension gosu-lsp-<version>.vsix
    ```
    Or in VS Code: **Extensions** → `...` → **Install from VSIX…** → select the `.vsix` file.
-
-> **Note:** The server JAR must be built before packaging (`.\gradlew.bat :server:copyServerJar` copies it to `client/server/` automatically).
 
 ## Running in VS Code (development)
 
@@ -161,7 +177,7 @@ Type-aware completions use Java reflection for JDK types and the Gosu runtime (`
 |---|---|---|
 | **1** | Syntax highlighting, diagnostics, completion, hover, go-to-definition | ✅ Done |
 | **2** | Type-aware completions, rename symbol, find all references | ✅ Done |
-| **3** | Format document, code actions, inlay hints | Planned |
+| **3** | Format document, code actions, inlay hints | ✅ Done |
 
 ## License
 

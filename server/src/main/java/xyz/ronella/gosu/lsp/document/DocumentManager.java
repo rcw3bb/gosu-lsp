@@ -11,14 +11,17 @@ public class DocumentManager {
 
     private final Map<String, String> store = new ConcurrentHashMap<>();
 
+    /** Opens {@code uri} in the store with the given initial content. */
     public void open(String uri, String content) {
         store.put(uri, content != null ? content : "");
     }
 
+    /** Replaces the stored content for {@code uri}. */
     public void update(String uri, String content) {
         store.put(uri, content != null ? content : "");
     }
 
+    /** Removes {@code uri} from the store. */
     public void close(String uri) {
         store.remove(uri);
     }
@@ -28,6 +31,7 @@ public class DocumentManager {
         return store.get(uri);
     }
 
+    /** Returns {@code true} if {@code uri} is currently open in the store. */
     public boolean isOpen(String uri) {
         return store.containsKey(uri);
     }

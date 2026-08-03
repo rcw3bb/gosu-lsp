@@ -91,6 +91,7 @@ public class GosuTypeProvider {
 
     // ── Initialisation ────────────────────────────────────────────────────
 
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     void ensureGosuInitialized() {
         if (initialized.get() || initFailed.get()) return;
         synchronized (this) {
@@ -147,6 +148,7 @@ public class GosuTypeProvider {
 
     // ── Tier 2: Gosu type system ──────────────────────────────────────────
 
+    @SuppressWarnings("PMD.AvoidCatchingThrowable")
     private static List<CompletionItem> getMembersViaGosu(String typeName) {
         try {
             IType type = TypeSystem.getByFullNameIfValid(typeName);

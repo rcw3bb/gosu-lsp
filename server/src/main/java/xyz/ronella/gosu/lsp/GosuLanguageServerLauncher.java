@@ -15,6 +15,7 @@ public class GosuLanguageServerLauncher {
 
     private static final Logger LOG = Logger.getLogger(GosuLanguageServerLauncher.class.getName());
 
+    /** Launches the Gosu LSP server on stdin/stdout and blocks until the connection closes. */
     public static void main(String[] args) throws Exception {
         // Redirect System.err so accidental prints don't corrupt the LSP stream
         java.io.PrintStream err = new java.io.PrintStream(new java.io.FileOutputStream(java.io.FileDescriptor.err));

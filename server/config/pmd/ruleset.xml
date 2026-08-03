@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<ruleset name="Gosu LSP Server Rules"
+    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+        https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+  <description>PMD rules for the Gosu LSP server — main sources only.</description>
+
+  <rule ref="category/java/bestpractices.xml">
+    <!--
+      GuardLogStatement: LOG.fine/info calls with concatenation are idiomatic here;
+      using supplier lambdas everywhere would reduce readability for no measurable gain.
+    -->
+    <exclude name="GuardLogStatement"/>
+    <!--
+      LooseCoupling: false positive in PMD 7.x — fields declared as Map/List interface
+      are incorrectly flagged when initialised with ConcurrentHashMap or ArrayList.
+    -->
+    <exclude name="LooseCoupling"/>
+  </rule>
+
+  <rule ref="category/java/errorprone.xml">
+    <!--
+      AvoidLiteralsInIfCondition: character literals such as '\n' in loop conditions
+      are idiomatic Java and do not warrant named constants.
+    -->
+    <exclude name="AvoidLiteralsInIfCondition"/>
+  </rule>
+
+  <rule ref="category/java/documentation.xml">
+    <!-- CommentSize governs formatting/length, not documentation presence. -->
+    <exclude name="CommentSize"/>
+    <!-- Excluded here; re-added below with public-member-only scope. -->
+    <exclude name="CommentRequired"/>
+  </rule>
+
+  <!-- Require Javadoc on classes, enums, and public methods/constructors only. -->
+  <rule ref="category/java/documentation.xml/CommentRequired">
+    <properties>
+      <property name="classCommentRequirement"           value="Required"/>
+      <property name="enumCommentRequirement"            value="Required"/>
+      <property name="publicMethodCommentRequirement"    value="Required"/>
+      <property name="protectedMethodCommentRequirement" value="Required"/>
+      <property name="fieldCommentRequirement"           value="Ignored"/>
+    </properties>
+  </rule>
+</ruleset>
+

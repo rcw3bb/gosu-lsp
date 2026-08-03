@@ -17,6 +17,7 @@ public class HoverHandler {
     private final DocumentManager documents;
     private final GosuSymbolExtractor extractor = new GosuSymbolExtractor();
 
+    /** Creates a new {@code HoverHandler} backed by the given {@link DocumentManager}. */
     public HoverHandler(DocumentManager documents) {
         this.documents = documents;
     }
@@ -51,6 +52,7 @@ public class HoverHandler {
 
     // ── Document symbols (outline) ────────────────────────────────────────
 
+    /** Returns all declared symbols in the document at {@code uri} for the outline view. */
     public List<Either<SymbolInformation, DocumentSymbol>> documentSymbols(String uri) {
         String content = documents.getContent(uri);
         List<Either<SymbolInformation, DocumentSymbol>> result = new ArrayList<>();

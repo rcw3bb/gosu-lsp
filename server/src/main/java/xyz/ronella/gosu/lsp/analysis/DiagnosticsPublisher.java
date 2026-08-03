@@ -17,6 +17,7 @@ public class DiagnosticsPublisher {
     private LanguageClient client;
     private final GosuSourceParser parser = new GosuSourceParser();
 
+    /** Wires the given {@link LanguageClient} for publishing diagnostics. */
     public void connect(LanguageClient client) {
         this.client = client;
     }

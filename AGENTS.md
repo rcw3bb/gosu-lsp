@@ -16,7 +16,7 @@ This repo is a Language Server Protocol (LSP) implementation for the [Gosu progr
 - `server/src/main/java/xyz/ronella/gosu/lsp/` — root LSP classes (server, launcher, text/workspace services)
 - `server/src/main/java/xyz/ronella/gosu/lsp/analysis/` — parser, diagnostics, symbol extractor, type provider
 - `server/src/main/java/xyz/ronella/gosu/lsp/document/` — in-memory document store
-- `server/src/main/java/xyz/ronella/gosu/lsp/handlers/` — completion, hover, definition, references, rename handlers
+- `server/src/main/java/xyz/ronella/gosu/lsp/handlers/` — completion, hover, definition, references, rename, formatting, code-action, inlay-hint handlers
 - `server/src/test/java/xyz/ronella/gosu/lsp/` — JUnit 5 unit tests mirroring main structure
 - `client/` — TypeScript VS Code extension (activates on `.gs`/`.gsx`, launches server JAR)
 - `client/src/extension.ts` — extension entry point
@@ -48,3 +48,6 @@ This repo is a Language Server Protocol (LSP) implementation for the [Gosu progr
 - 3+ related notes on the same topic → create a `docs/` context file, move notes there, update the Tree. Keep this file under 100 lines.
 - The `gosu-core` dependency brings in Java 25 class files that cause JaCoCo 0.8.11 to log instrumentation warnings; these are harmless and do not fail the build (learned 2026-08-02)
 - When replacing large Java files with replace_string_in_file, the old tail content may remain; use PowerShell Set-Content to rewrite the file cleanly instead (learned 2026-08-02)
+- `GosuLanguage.g4` uses `WS -> skip` so `TokenStreamRewriter` cannot edit whitespace; the formatter must rebuild source from scratch by iterating the token list and computing spacing from token-type rules (learned 2026-08-02)
+- Compound operators (`==`, `!=`, `<=`, `>=`, `||`, `&&`, `..`, `<<`, `>>`) are represented as adjacent single-char tokens in the grammar; `FormattingHandler.isCompoundPair()` is the guard that prevents spaces being inserted inside them (learned 2026-08-02)
+- PMD 7.x `LooseCoupling` rule flags `ConcurrentHashMap` initialisations even when declared as `Map` (false positive); exclude `LooseCoupling` in `server/config/pmd/ruleset.xml` (learned 2026-08-02)

@@ -2,7 +2,7 @@
   "name": "gosu-lsp",
   "displayName": "Gosu Language Support",
   "description": "Language support for Gosu (.gs, .gsx) files — syntax highlighting, diagnostics, completion, hover, and go-to-definition via LSP.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "gosu-lsp",
   "license": "MIT",
   "repository": {
