@@ -33,7 +33,7 @@ This repo is a Language Server Protocol (LSP) implementation for the [Gosu progr
 - When changing the grammar, run `.\gradlew.bat :server:generateGrammarSource` and verify no compile errors before touching Java code; ANTLR-generated files live under `server/build/generated-src/antlr/main/` and must not be hand-edited
 - All new Java code must have unit tests in `server/src/test/java/` mirroring the main package structure; target ≥ 90% instruction coverage
 - Never drop the JaCoCo `afterEvaluate` exclusions in `server/build.gradle` — ANTLR grammar classes and `GosuLanguageServerLauncher` must remain excluded
-- Keep both `server/build.gradle` `version` and `client/package.json` `version` in sync when bumping versions; server uses `-SNAPSHOT` suffix
+- Keep `server/build.gradle` `version`, `client/package.json` `version`, and the version badge in `README.md` in sync when bumping versions; server uses `-SNAPSHOT` suffix; `client/package.json` `publisher` must match the VS Marketplace publisher ID
 - Never modify `GosuLanguageServerLauncher.main()` without considering that it blocks on stdin and is intentionally excluded from coverage
 - Follow SOLID — each class has a single responsibility; `GosuTextDocumentService` delegates to handlers rather than implementing logic directly
 - Follow DRY — do not duplicate symbol extraction logic; `GosuSymbolExtractor` is the single source of truth
