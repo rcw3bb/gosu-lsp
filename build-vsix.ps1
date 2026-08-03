@@ -18,6 +18,7 @@ Write-Host '==> Building server JAR and copying to client/server/ ...' -Foregrou
 if ($LASTEXITCODE -ne 0) { throw "Gradle :server:copyServerJar failed (exit $LASTEXITCODE)." }
 
 Write-Host '==> Installing Node dependencies ...' -ForegroundColor Cyan
+Copy-Item -Path "$PSScriptRoot\README.md" -Destination "$PSScriptRoot\client\README.md" -Force
 Push-Location client
 try {
     & npm install
@@ -32,5 +33,6 @@ try {
         Write-Host "==> VSIX created: $($vsix.FullName)" -ForegroundColor Green
     }
 } finally {
+    Remove-Item -Path "$PSScriptRoot\client\README.md" -ErrorAction SilentlyContinue
     Pop-Location
 }
