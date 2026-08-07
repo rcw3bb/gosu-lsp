@@ -17,6 +17,7 @@ public class GosuLanguageServerLauncher {
     private static final Logger LOG = Logger.getLogger(GosuLanguageServerLauncher.class.getName());
 
     /** Launches the Gosu LSP server on stdin/stdout and blocks until the connection closes. */
+    @SuppressWarnings("PMD.CloseResource") // err wraps FileDescriptor.err — it must stay open for JVM lifetime
     public static void main(String[] args) throws Exception {
         // Load logging configuration from the classpath before anything else.
         try (InputStream cfg = GosuLanguageServerLauncher.class.getResourceAsStream("/logging.properties")) {
