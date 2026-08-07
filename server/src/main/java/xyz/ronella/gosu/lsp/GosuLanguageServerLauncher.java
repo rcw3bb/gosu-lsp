@@ -6,7 +6,6 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 import java.io.InputStream;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 

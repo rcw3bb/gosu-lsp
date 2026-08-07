@@ -56,7 +56,8 @@ pmd {
 }
 
 pmdMain {
-    exclude '**/grammar/**'  // skip ANTLR-generated sources
+    exclude '**/grammar/**'                  // skip ANTLR-generated sources
+    exclude '**/GosuLanguageServerLauncher*'  // launcher entry-point, excluded from coverage
 }
 
 pmdTest.enabled = false
