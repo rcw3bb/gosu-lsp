@@ -1,0 +1,39 @@
+name: Publish
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  publish:
+    name: Publish VS Code Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Build server JAR and copy to client
+        run: ./gradlew :server:copyServerJar
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Copy README to client
+        run: cp README.md client/README.md
+
+      - name: Install dependencies
+        working-directory: client
+        run: npm install
+
+      - name: Publish extension
+        working-directory: client
+        run: npx @vscode/vsce publish --pat ${{ secrets.VSCE_PAT }}
