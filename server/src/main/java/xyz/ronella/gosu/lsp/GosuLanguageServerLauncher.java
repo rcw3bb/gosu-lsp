@@ -4,8 +4,10 @@ import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
+import java.io.InputStream;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -17,6 +19,13 @@ public class GosuLanguageServerLauncher {
 
     /** Launches the Gosu LSP server on stdin/stdout and blocks until the connection closes. */
     public static void main(String[] args) throws Exception {
+        // Load logging configuration from the classpath before anything else.
+        try (InputStream cfg = GosuLanguageServerLauncher.class.getResourceAsStream("/logging.properties")) {
+            if (cfg != null) {
+                LogManager.getLogManager().readConfiguration(cfg);
+            }
+        }
+
         // Redirect System.err so accidental prints don't corrupt the LSP stream
         java.io.PrintStream err = new java.io.PrintStream(new java.io.FileOutputStream(java.io.FileDescriptor.err));
         System.setErr(err);
