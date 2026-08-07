@@ -25,6 +25,11 @@
       are idiomatic Java and do not warrant named constants.
     -->
     <exclude name="AvoidLiteralsInIfCondition"/>
+    <!--
+      DoNotTerminateVM: System.exit() is the correct response to the LSP 'exit' notification
+      in a standalone server process; the J2EE restriction does not apply here.
+    -->
+    <exclude name="DoNotTerminateVM"/>
   </rule>
 
   <rule ref="category/java/documentation.xml">

@@ -11,6 +11,7 @@ import {
     ServerOptions,
     Executable,
     TransportKind,
+    RevealOutputChannelOn,
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient | undefined;
@@ -44,6 +45,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             fileEvents: workspace.createFileSystemWatcher('**/*.{gs,gsx}'),
         },
         outputChannelName: 'Gosu Language Server',
+        revealOutputChannelOn: RevealOutputChannelOn.Info,
     };
 
     client = new LanguageClient(

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.2 - 2026-08-08
+
+### Added
+- Visible logging: `logging.properties` bundled in the server JAR configures JUL with a compact single-line format directed to stderr; `GosuLanguageServerLauncher` loads it at startup
+- `RevealOutputChannelOn.Info` added to the VS Code client so the "Gosu Language Server" output panel opens automatically on the first log message
+- JAR manifest now includes `Implementation-Title` and `Implementation-Version` attributes
+
 ## 0.3.1 - 2026-08-03
 
 ### Fixed

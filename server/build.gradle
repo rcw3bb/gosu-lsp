@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'xyz.ronella.gosu'
-version = '0.3.1-SNAPSHOT'
+version = '0.3.2-SNAPSHOT'
 
 java {
     sourceCompatibility = JavaVersion.VERSION_17
@@ -56,7 +56,8 @@ pmd {
 }
 
 pmdMain {
-    exclude '**/grammar/**'  // skip ANTLR-generated sources
+    exclude '**/grammar/**'                  // skip ANTLR-generated sources
+    exclude '**/GosuLanguageServerLauncher*'  // launcher entry-point, excluded from coverage
 }
 
 pmdTest.enabled = false
@@ -86,7 +87,9 @@ shadowJar {
     archiveClassifier  = ''
     mergeServiceFiles()
     manifest {
-        attributes 'Main-Class': application.mainClass.get()
+        attributes 'Main-Class':       application.mainClass.get(),
+                   'Implementation-Title':   'Gosu Language Server',
+                   'Implementation-Version': version
     }
 }
 
