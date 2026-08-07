@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.3 - 2026-08-08
+
+### Fixed
+- Server JAR was missing from the marketplace extension because `client/server/` is listed in `.gitignore`; added `!server` to `client/.vscodeignore` so `vsce` includes it regardless
+
 ## 0.3.2 - 2026-08-08
 
 ### Added
