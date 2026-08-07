@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.4 - 2026-08-08
+
+### Fixed
+- Extension failed to activate when installed from the marketplace because `vscode-languageclient` was not bundled and `node_modules` is excluded from the VSIX; switched `vscode:prepublish` to use `esbuild` so all runtime dependencies are inlined into `out/extension.js`
+
 ## 0.3.3 - 2026-08-08
 
 ### Fixed
