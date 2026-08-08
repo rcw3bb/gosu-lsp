@@ -1,7 +1,7 @@
 # Gosu LSP
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.3.4-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.5-blue.svg)](CHANGELOG.md)
 
 A Language Server Protocol (LSP) implementation for the [Gosu programming language](https://gosu-lang.github.io/), providing Java-like IDE features for `.gs` and `.gsx` files in VS Code.
 

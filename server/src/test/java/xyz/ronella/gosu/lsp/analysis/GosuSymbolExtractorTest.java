@@ -57,6 +57,39 @@ class GosuSymbolExtractorTest {
     }
 
     @Test
+    void extract_annotationDeclaration() {
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract("annotation StringFieldInfuser {\n}");
+        assertTrue(symbols.stream().anyMatch(s ->
+                s.name.equals("StringFieldInfuser") && s.kind == GosuSymbolExtractor.SymbolKind.ANNOTATION));
+    }
+
+    @Test
+    void extract_annotationDeclarationNotFalseMatchedInPackagePath() {
+        // 'annotation' inside a package/uses path must NOT be extracted as a symbol
+        String src = "package xyz.example.annotation\n"
+                   + "uses java.lang.annotation.Target\n"
+                   + "annotation CalculatedFieldInfuser {\n}";
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract(src);
+        // Only CalculatedFieldInfuser should be an ANNOTATION symbol — not 'Target' or 'uses'
+        assertTrue(symbols.stream().anyMatch(s ->
+                s.name.equals("CalculatedFieldInfuser") && s.kind == GosuSymbolExtractor.SymbolKind.ANNOTATION));
+        assertTrue(symbols.stream().noneMatch(s ->
+                s.kind == GosuSymbolExtractor.SymbolKind.ANNOTATION && !s.name.equals("CalculatedFieldInfuser")));
+    }
+
+    @Test
+    void extract_annotationSymbol_startCharPointsToName() {
+        String src = "annotation MyAnnotation {\n}";
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract(src);
+        GosuSymbolExtractor.Symbol sym = symbols.stream()
+                .filter(s -> s.name.equals("MyAnnotation"))
+                .findFirst().orElse(null);
+        assertNotNull(sym);
+        // 'annotation ' is 11 chars, so name starts at col 11
+        assertEquals(11, sym.startChar);
+    }
+
+    @Test
     void extract_functionDeclaration() {
         List<GosuSymbolExtractor.Symbol> symbols = extractor.extract("function doSomething() : String {\n}");
         assertTrue(symbols.stream().anyMatch(s ->

@@ -189,6 +189,7 @@ public class CompletionHandler {
             case CLASS, ENHANCEMENT -> CompletionItemKind.Class;
             case INTERFACE          -> CompletionItemKind.Interface;
             case ENUM               -> CompletionItemKind.Enum;
+            case ANNOTATION         -> CompletionItemKind.Reference;
             case FUNCTION           -> CompletionItemKind.Function;
             case PROPERTY           -> CompletionItemKind.Property;
             case VARIABLE, FIELD    -> CompletionItemKind.Variable;

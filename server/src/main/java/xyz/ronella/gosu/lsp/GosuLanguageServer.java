@@ -34,6 +34,10 @@ public class GosuLanguageServer implements LanguageServer, LanguageClientAware {
     public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
         LOG.info("initialize() called");
 
+        if (params.getWorkspaceFolders() != null && !params.getWorkspaceFolders().isEmpty()) {
+            textDocumentService.setWorkspaceRoot(params.getWorkspaceFolders().get(0).getUri());
+        }
+
         ServerCapabilities caps = new ServerCapabilities();
 
         // --- Document synchronisation (incremental) ---
@@ -80,7 +84,7 @@ public class GosuLanguageServer implements LanguageServer, LanguageClientAware {
         ihOpts.setResolveProvider(false);
         caps.setInlayHintProvider(ihOpts);
 
-        ServerInfo info = new ServerInfo("Gosu Language Server", "0.3.0");
+        ServerInfo info = new ServerInfo("Gosu Language Server", "0.3.5");
         InitializeResult result = new InitializeResult(caps);
         result.setServerInfo(info);
         return CompletableFuture.completedFuture(result);

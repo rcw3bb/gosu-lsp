@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DocumentManager {
 
     private final Map<String, String> store = new ConcurrentHashMap<>();
+    private volatile String workspaceRoot;
 
     /** Opens {@code uri} in the store with the given initial content. */
     public void open(String uri, String content) {
@@ -39,5 +40,15 @@ public class DocumentManager {
     /** Returns a read-only snapshot of all open documents. */
     public Map<String, String> snapshot() {
         return Collections.unmodifiableMap(store);
+    }
+
+    /** Sets the workspace root URI (e.g. {@code file:///path/to/project}). */
+    public void setWorkspaceRoot(String rootUri) {
+        this.workspaceRoot = rootUri;
+    }
+
+    /** Returns the workspace root URI, or {@code null} if not set. */
+    public String getWorkspaceRoot() {
+        return workspaceRoot;
     }
 }

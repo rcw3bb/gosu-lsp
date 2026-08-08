@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.5 - 2026-08-08
+
+### Added
+- **Annotation go-to-definition** — CTRL+Click on an annotation usage (e.g. `@CalculatedFieldInfuser`) now navigates to its `annotation Foo { }` declaration; the server scans the workspace file tree if the declaration file is not already open
+- `ANNOTATION` added to `GosuSymbolExtractor.SymbolKind`; annotation declarations extracted via a line-anchored regex that avoids false matches inside package/uses paths (e.g. `java.lang.annotation.Target`)
+- `GosuSymbolExtractor.annotationSymbol()` computes the correct `startChar` pointing to the annotation name rather than the `annotation` keyword
+- `annotation` case added to `HoverHandler.buildHoverMarkdown()` for correct hover display
+- `DefinitionHandler` falls back to a heuristic project-root search (walks up from the current file looking for `.git`, `build.gradle`, `settings.gradle`, `pom.xml`) when no workspace root is configured by the client
+- `DocumentManager.setWorkspaceRoot()` / `getWorkspaceRoot()` for workspace-root propagation
+- `GosuLanguageServer.initialize()` captures workspace root from `InitializeParams.getWorkspaceFolders()`
+- `DefinitionHandler` logger (FINE level) for diagnosing workspace scan path and resolved word
+
+### Fixed
+- Annotation symbols were absent from the document outline because the `annotation` keyword inside `uses`/`package` paths (e.g. `java.lang.annotation.Retention\nuses`) was being matched as a false symbol, polluting the extractor output
+
 ## 0.3.4 - 2026-08-08
 
 ### Fixed
