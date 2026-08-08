@@ -68,14 +68,45 @@ public class GosuSymbolExtractor {
     /** Extracts all named symbols from {@code content} via regex-based pattern matching. */
     public List<Symbol> extract(String content) {
         if (content == null || content.isEmpty()) return Collections.emptyList();
-        int[] offsets = buildLineOffsets(content);
+        String stripped = stripComments(content);
+        int[] offsets = buildLineOffsets(stripped);
         List<Symbol> symbols = new ArrayList<>();
-        extractMatches(content, offsets, CLASS_DECL,      symbols, this::classSymbol);
-        extractMatches(content, offsets, ANNOTATION_DECL, symbols, this::annotationSymbol);
-        extractMatches(content, offsets, FUNCTION_DECL,   symbols, this::functionSymbol);
-        extractMatches(content, offsets, PROPERTY_DECL,   symbols, this::propertySymbol);
-        extractMatches(content, offsets, VAR_DECL,        symbols, this::varSymbol);
+        extractMatches(stripped, offsets, CLASS_DECL,      symbols, this::classSymbol);
+        extractMatches(stripped, offsets, ANNOTATION_DECL, symbols, this::annotationSymbol);
+        extractMatches(stripped, offsets, FUNCTION_DECL,   symbols, this::functionSymbol);
+        extractMatches(stripped, offsets, PROPERTY_DECL,   symbols, this::propertySymbol);
+        extractMatches(stripped, offsets, VAR_DECL,        symbols, this::varSymbol);
         return symbols;
+    }
+
+    /** Replaces comment text with spaces, preserving newlines so character offsets stay valid. */
+    static String stripComments(String content) {
+        StringBuilder sb = new StringBuilder(content);
+        int i = 0;
+        int len = content.length();
+        while (i < len) {
+            char c = content.charAt(i);
+            if (c == '"' || c == '\'') {
+                char quote = c;
+                i++;
+                while (i < len) {
+                    char sc = content.charAt(i);
+                    if (sc == '\\') { i += 2; }
+                    else if (sc == quote) { i++; break; }
+                    else { i++; }
+                }
+            } else if (i + 1 < len && c == '/' && content.charAt(i + 1) == '/') {
+                while (i < len && content.charAt(i) != '\n') { sb.setCharAt(i, ' '); i++; }
+            } else if (i + 1 < len && c == '/' && content.charAt(i + 1) == '*') {
+                while (i < len) {
+                    if (content.charAt(i) == '\n') { i++; }
+                    else if (i + 1 < len && content.charAt(i) == '*' && content.charAt(i + 1) == '/') {
+                        sb.setCharAt(i, ' '); sb.setCharAt(i + 1, ' '); i += 2; break;
+                    } else { sb.setCharAt(i, ' '); i++; }
+                }
+            } else { i++; }
+        }
+        return sb.toString();
     }
 
     /** Returns only the symbols whose names start with {@code prefix} (case-insensitive). */
@@ -154,10 +185,11 @@ public class GosuSymbolExtractor {
         if (content == null || content.isEmpty() || word == null || word.isEmpty()) {
             return Collections.emptyList();
         }
-        int[] offsets = buildLineOffsets(content);
+        String stripped = stripComments(content);
+        int[] offsets = buildLineOffsets(stripped);
         List<Range> ranges = new ArrayList<>();
         Pattern pattern = Pattern.compile("\\b" + Pattern.quote(word) + "\\b");
-        Matcher m = pattern.matcher(content);
+        Matcher m = pattern.matcher(stripped);
         while (m.find()) {
             int line = lineAtOffset(offsets, m.start());
             int col  = colAtOffset(offsets, line, m.start());

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - 2026-08-09
+
+### Fixed
+- **Comment content excluded from symbols** — `GosuSymbolExtractor.extract()` now strips `//` line comments and `/* */` block comments (replacing their text with spaces to preserve character offsets) before running regex patterns, so declarations inside comments are no longer reported as symbols
+- **Comment content excluded from references** — `GosuSymbolExtractor.findOccurrences()` applies the same comment stripping before searching for word occurrences, so references inside comments are no longer returned
+
 ## 0.4.0 - 2026-08-09
 
 ### Changed
