@@ -212,6 +212,52 @@ class GosuSymbolExtractorTest {
         assertEquals(6, GosuSymbolExtractor.lineStart(src, 8));
     }
 
+    // ── buildLineOffsets / lineAtOffset ───────────────────────────────────
+
+    @Test
+    void buildLineOffsets_singleLine_containsOnlyZero() {
+        assertArrayEquals(new int[]{0}, GosuSymbolExtractor.buildLineOffsets("hello"));
+    }
+
+    @Test
+    void buildLineOffsets_multipleLines_correctOffsets() {
+        // "ab\ncd\nef" — line 0 at 0, line 1 at 3, line 2 at 6
+        assertArrayEquals(new int[]{0, 3, 6}, GosuSymbolExtractor.buildLineOffsets("ab\ncd\nef"));
+    }
+
+    @Test
+    void lineAtOffset_firstLine_returnsZero() {
+        int[] offsets = GosuSymbolExtractor.buildLineOffsets("hello world");
+        assertEquals(0, GosuSymbolExtractor.lineAtOffset(offsets, 3));
+    }
+
+    @Test
+    void lineAtOffset_secondLine_returnsOne() {
+        int[] offsets = GosuSymbolExtractor.buildLineOffsets("line1\nline2");
+        assertEquals(1, GosuSymbolExtractor.lineAtOffset(offsets, 6));
+    }
+
+    @Test
+    void lineAtOffset_exactLineStart_returnsCorrectLine() {
+        int[] offsets = GosuSymbolExtractor.buildLineOffsets("a\nb\nc");
+        assertEquals(1, GosuSymbolExtractor.lineAtOffset(offsets, 2));
+        assertEquals(2, GosuSymbolExtractor.lineAtOffset(offsets, 4));
+    }
+
+    @Test
+    void extractResults_lineNumbersCorrectAfterOptimization() {
+        String src = "class Foo {\n  function bar() : String {}\n  var count : Integer = 0\n}";
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract(src);
+        GosuSymbolExtractor.Symbol bar = symbols.stream()
+                .filter(s -> s.name.equals("bar")).findFirst().orElse(null);
+        assertNotNull(bar);
+        assertEquals(1, bar.line);
+        GosuSymbolExtractor.Symbol count = symbols.stream()
+                .filter(s -> s.name.equals("count")).findFirst().orElse(null);
+        assertNotNull(count);
+        assertEquals(2, count.line);
+    }
+
     // ── isWordChar / wordAt boundary coverage ─────────────────────────────
 
     @Test

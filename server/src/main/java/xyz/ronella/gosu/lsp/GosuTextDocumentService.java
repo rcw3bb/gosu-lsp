@@ -17,7 +17,9 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -39,6 +41,7 @@ public class GosuTextDocumentService implements TextDocumentService {
     private final FormattingHandler formattingHandler   = new FormattingHandler(documents);
     private final CodeActionHandler codeActionHandler   = new CodeActionHandler();
     private final InlayHintHandler inlayHintHandler     = new InlayHintHandler(documents);
+    private final Map<String, List<Either<SymbolInformation, DocumentSymbol>>> symbolCache = new ConcurrentHashMap<>();
 
     private LanguageClient client;
 
@@ -66,6 +69,7 @@ public class GosuTextDocumentService implements TextDocumentService {
         String content = params.getTextDocument().getText();
         LOG.fine("didOpen: " + uri);
         documents.open(uri, content);
+        symbolCache.remove(uri);
         diagnostics.publishDiagnostics(uri, content);
     }
 
@@ -88,6 +92,7 @@ public class GosuTextDocumentService implements TextDocumentService {
             }
         }
         documents.update(uri, current);
+        symbolCache.remove(uri);
         diagnostics.publishDiagnostics(uri, current);
     }
 
@@ -96,6 +101,7 @@ public class GosuTextDocumentService implements TextDocumentService {
         String uri = params.getTextDocument().getUri();
         LOG.fine("didClose: " + uri);
         documents.close(uri);
+        symbolCache.remove(uri);
         // Clear diagnostics on close
         client.publishDiagnostics(new PublishDiagnosticsParams(uri, List.of()));
     }
@@ -146,9 +152,14 @@ public class GosuTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(
             DocumentSymbolParams params) {
-        return CompletableFuture.supplyAsync(() ->
-                hoverHandler.documentSymbols(params.getTextDocument().getUri())
-        );
+        String uri = params.getTextDocument().getUri();
+        List<Either<SymbolInformation, DocumentSymbol>> cached = symbolCache.get(uri);
+        if (cached != null) return CompletableFuture.completedFuture(cached);
+        return CompletableFuture.supplyAsync(() -> {
+            List<Either<SymbolInformation, DocumentSymbol>> result = hoverHandler.documentSymbols(uri);
+            symbolCache.put(uri, result);
+            return result;
+        });
     }
 
     @Override

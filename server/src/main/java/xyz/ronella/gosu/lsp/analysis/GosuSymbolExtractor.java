@@ -68,12 +68,13 @@ public class GosuSymbolExtractor {
     /** Extracts all named symbols from {@code content} via regex-based pattern matching. */
     public List<Symbol> extract(String content) {
         if (content == null || content.isEmpty()) return Collections.emptyList();
+        int[] offsets = buildLineOffsets(content);
         List<Symbol> symbols = new ArrayList<>();
-        extractMatches(content, CLASS_DECL,      symbols, this::classSymbol);
-        extractMatches(content, ANNOTATION_DECL, symbols, this::annotationSymbol);
-        extractMatches(content, FUNCTION_DECL,   symbols, this::functionSymbol);
-        extractMatches(content, PROPERTY_DECL,   symbols, this::propertySymbol);
-        extractMatches(content, VAR_DECL,         symbols, this::varSymbol);
+        extractMatches(content, offsets, CLASS_DECL,      symbols, this::classSymbol);
+        extractMatches(content, offsets, ANNOTATION_DECL, symbols, this::annotationSymbol);
+        extractMatches(content, offsets, FUNCTION_DECL,   symbols, this::functionSymbol);
+        extractMatches(content, offsets, PROPERTY_DECL,   symbols, this::propertySymbol);
+        extractMatches(content, offsets, VAR_DECL,        symbols, this::varSymbol);
         return symbols;
     }
 
@@ -100,12 +101,12 @@ public class GosuSymbolExtractor {
         Symbol apply(Matcher m, int line, int startChar);
     }
 
-    private void extractMatches(String content, Pattern pattern, List<Symbol> out,
+    private void extractMatches(String content, int[] offsets, Pattern pattern, List<Symbol> out,
                                  MatchToSymbol converter) {
         Matcher m = pattern.matcher(content);
         while (m.find()) {
-            int line = lineOf(content, m.start());
-            int col  = m.start() - lineStart(content, m.start());
+            int line = lineAtOffset(offsets, m.start());
+            int col  = colAtOffset(offsets, line, m.start());
             Symbol s = converter.apply(m, line, col);
             if (s != null) out.add(s);
         }
@@ -153,12 +154,13 @@ public class GosuSymbolExtractor {
         if (content == null || content.isEmpty() || word == null || word.isEmpty()) {
             return Collections.emptyList();
         }
+        int[] offsets = buildLineOffsets(content);
         List<Range> ranges = new ArrayList<>();
         Pattern pattern = Pattern.compile("\\b" + Pattern.quote(word) + "\\b");
         Matcher m = pattern.matcher(content);
         while (m.find()) {
-            int line = lineOf(content, m.start());
-            int col  = m.start() - lineStart(content, m.start());
+            int line = lineAtOffset(offsets, m.start());
+            int col  = colAtOffset(offsets, line, m.start());
             ranges.add(new Range(
                     new Position(line, col),
                     new Position(line, col + word.length())));
@@ -181,6 +183,29 @@ public class GosuSymbolExtractor {
             if (content.charAt(i) == '\n') return i + 1;
         }
         return 0;
+    }
+
+    /** Builds a sorted array of line-start offsets for O(log n) line lookup. */
+    public static int[] buildLineOffsets(String content) {
+        List<Integer> list = new ArrayList<>();
+        list.add(0);
+        for (int i = 0; i < content.length(); i++) {
+            if (content.charAt(i) == '\n') list.add(i + 1);
+        }
+        int[] arr = new int[list.size()];
+        for (int i = 0; i < arr.length; i++) arr[i] = list.get(i);
+        return arr;
+    }
+
+    /** Returns the 0-based line number for {@code pos} using a pre-built offset table. */
+    public static int lineAtOffset(int[] lineOffsets, int pos) {
+        int idx = Arrays.binarySearch(lineOffsets, pos);
+        return idx >= 0 ? idx : -idx - 2;
+    }
+
+    /** Returns the 0-based column of {@code pos} given its line index. */
+    public static int colAtOffset(int[] lineOffsets, int lineIndex, int pos) {
+        return pos - lineOffsets[lineIndex];
     }
 
     /** Returns the word at the given (line, character) position in {@code content}. */
