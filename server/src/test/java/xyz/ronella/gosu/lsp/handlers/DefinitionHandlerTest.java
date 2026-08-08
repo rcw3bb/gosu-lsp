@@ -4,8 +4,13 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import xyz.ronella.gosu.lsp.document.DocumentManager;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,5 +82,38 @@ class DefinitionHandlerTest {
         List<Location> result = handler.definition("file:///foo.gs", new Position(1, 10));
         assertFalse(result.isEmpty());
         assertEquals("file:///foo.gs", result.get(0).getUri());
+    }
+
+    @Test
+    void definition_annotationInWorkspaceFile_foundOnDisk(@TempDir Path tmp) throws IOException {
+        Path annotFile = tmp.resolve("StringFieldInfuser.gs");
+        Files.writeString(annotFile, "annotation StringFieldInfuser {\n}", StandardCharsets.UTF_8);
+
+        documents.open("file:///current.gs", "@StringFieldInfuser\nclass Foo {}");
+        documents.setWorkspaceRoot(tmp.toUri().toString());
+
+        // cursor on "StringFieldInfuser" (line 0, char 5 — inside the name after '@')
+        List<Location> result = handler.definition("file:///current.gs", new Position(0, 5));
+        assertFalse(result.isEmpty(), "Should find annotation declared in workspace file");
+        assertTrue(result.stream().anyMatch(l -> l.getUri().contains("StringFieldInfuser.gs")));
+    }
+
+    @Test
+    void definition_annotationInWorkspaceFile_foundWithoutExplicitRoot(@TempDir Path tmp) throws IOException {
+        // Simulate a Gradle project: tmp acts as the project root with build.gradle
+        Files.writeString(tmp.resolve("build.gradle"), "// gradle", StandardCharsets.UTF_8);
+        Path annotFile = tmp.resolve("CalculatedFieldInfuser.gs");
+        Files.writeString(annotFile, "annotation CalculatedFieldInfuser {\n}", StandardCharsets.UTF_8);
+
+        // Current file lives inside the same project tree; no workspaceRoot set
+        Path currentFile = tmp.resolve("MyEnhancement.gs");
+        Files.writeString(currentFile, "typeis Optional<CalculatedFieldInfuser>", StandardCharsets.UTF_8);
+        String currentUri = currentFile.toUri().toString();
+        documents.open(currentUri, "typeis Optional<CalculatedFieldInfuser>");
+
+        // cursor on "CalculatedFieldInfuser" — 'C' starts at char 16 (after "typeis Optional<")
+        List<Location> result = handler.definition(currentUri, new Position(0, 20));
+        assertFalse(result.isEmpty(), "Should find annotation via heuristic project-root detection");
+        assertTrue(result.stream().anyMatch(l -> l.getUri().contains("CalculatedFieldInfuser.gs")));
     }
 }

@@ -31,11 +31,16 @@ public class GosuSymbolExtractor {
             "\\b(class|interface|enum|enhancement)\\s+(\\w+)",
             Pattern.MULTILINE);
 
+    // ^ anchors to line-start (MULTILINE) to avoid matching 'annotation' inside package/uses paths
+    private static final Pattern ANNOTATION_DECL = Pattern.compile(
+            "^\\s*annotation\\s+(\\w+)",
+            Pattern.MULTILINE);
+
     // ── Symbol model ─────────────────────────────────────────────────────
 
     /** Classifies the kind of a declared symbol in Gosu source. */
     public enum SymbolKind {
-        CLASS, INTERFACE, ENUM, ENHANCEMENT,
+        CLASS, INTERFACE, ENUM, ENHANCEMENT, ANNOTATION,
         FUNCTION, PROPERTY, VARIABLE, FIELD
     }
 
@@ -64,10 +69,11 @@ public class GosuSymbolExtractor {
     public List<Symbol> extract(String content) {
         if (content == null || content.isEmpty()) return Collections.emptyList();
         List<Symbol> symbols = new ArrayList<>();
-        extractMatches(content, CLASS_DECL,    symbols, this::classSymbol);
-        extractMatches(content, FUNCTION_DECL, symbols, this::functionSymbol);
-        extractMatches(content, PROPERTY_DECL, symbols, this::propertySymbol);
-        extractMatches(content, VAR_DECL,       symbols, this::varSymbol);
+        extractMatches(content, CLASS_DECL,      symbols, this::classSymbol);
+        extractMatches(content, ANNOTATION_DECL, symbols, this::annotationSymbol);
+        extractMatches(content, FUNCTION_DECL,   symbols, this::functionSymbol);
+        extractMatches(content, PROPERTY_DECL,   symbols, this::propertySymbol);
+        extractMatches(content, VAR_DECL,         symbols, this::varSymbol);
         return symbols;
     }
 
@@ -115,6 +121,11 @@ public class GosuSymbolExtractor {
             default            -> SymbolKind.CLASS;
         };
         return new Symbol(name, null, sk, line, col);
+    }
+
+    private Symbol annotationSymbol(Matcher m, int line, int col) {
+        int nameCol = col + (m.start(1) - m.start());
+        return new Symbol(m.group(1), null, SymbolKind.ANNOTATION, line, nameCol);
     }
 
     private Symbol functionSymbol(Matcher m, int line, int col) {

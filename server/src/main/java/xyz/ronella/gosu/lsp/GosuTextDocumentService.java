@@ -53,6 +53,11 @@ public class GosuTextDocumentService implements TextDocumentService {
         diagnostics.connect(client);
     }
 
+    /** Passes the workspace root URI to the document store for cross-file definition lookup. */
+    public void setWorkspaceRoot(String rootUri) {
+        documents.setWorkspaceRoot(rootUri);
+    }
+
     // ── Document lifecycle ────────────────────────────────────────────────
 
     @Override

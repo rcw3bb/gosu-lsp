@@ -85,6 +85,7 @@ public class HoverHandler {
             case INTERFACE   -> sb.append("interface ").append(sym.name);
             case ENUM        -> sb.append("enum ").append(sym.name);
             case ENHANCEMENT -> sb.append("enhancement ").append(sym.name);
+            case ANNOTATION  -> sb.append("annotation ").append(sym.name);
             case FUNCTION    -> {
                 sb.append("function ").append(sym.name).append("(...)");
                 if (sym.type != null) sb.append(": ").append(sym.type);
@@ -104,6 +105,7 @@ public class HoverHandler {
             case CLASS, ENHANCEMENT -> SymbolKind.Class;
             case INTERFACE          -> SymbolKind.Interface;
             case ENUM               -> SymbolKind.Enum;
+            case ANNOTATION         -> SymbolKind.Class;
             case FUNCTION           -> SymbolKind.Function;
             case PROPERTY           -> SymbolKind.Property;
             case VARIABLE, FIELD    -> SymbolKind.Variable;
