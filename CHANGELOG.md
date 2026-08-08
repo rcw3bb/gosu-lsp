@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 - 2026-08-09
+
+### Changed
+- **Outline performance** — `GosuSymbolExtractor.extract()` now pre-builds a line-offset table (single O(n) scan + binary search) instead of calling the O(n) `lineOf()`/`lineStart()` helpers per regex match; `findOccurrences()` receives the same treatment
+- **Outline caching** — `GosuTextDocumentService` caches `documentSymbol` results per URI; repeated requests on an unchanged document return the cached list immediately without re-running any regex; cache is invalidated on `didOpen`, `didChange`, and `didClose`
+
 ## 0.3.5 - 2026-08-08
 
 ### Added

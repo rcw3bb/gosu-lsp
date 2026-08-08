@@ -189,6 +189,36 @@ class GosuTextDocumentServiceTest {
     }
 
     @Test
+    void documentSymbol_cachedOnRepeatedCall_returnsSameInstance() throws Exception {
+        service.didOpen(openParams("file:///cached.gs", "class Cached {}"));
+        List<Either<SymbolInformation, DocumentSymbol>> first =
+                service.documentSymbol(docSymbolParams("file:///cached.gs")).get();
+        List<Either<SymbolInformation, DocumentSymbol>> second =
+                service.documentSymbol(docSymbolParams("file:///cached.gs")).get();
+        assertSame(first, second);
+    }
+
+    @Test
+    void documentSymbol_cacheInvalidatedAfterDidChange() throws Exception {
+        service.didOpen(openParams("file:///evict.gs", "class Old {}"));
+        List<Either<SymbolInformation, DocumentSymbol>> before =
+                service.documentSymbol(docSymbolParams("file:///evict.gs")).get();
+
+        DidChangeTextDocumentParams change = new DidChangeTextDocumentParams();
+        change.setTextDocument(new VersionedTextDocumentIdentifier("file:///evict.gs", 2));
+        TextDocumentContentChangeEvent ev = new TextDocumentContentChangeEvent();
+        ev.setRange(null);
+        ev.setText("class New {}");
+        change.setContentChanges(List.of(ev));
+        service.didChange(change);
+
+        List<Either<SymbolInformation, DocumentSymbol>> after =
+                service.documentSymbol(docSymbolParams("file:///evict.gs")).get();
+        assertNotSame(before, after);
+        assertTrue(after.stream().anyMatch(e -> e.isRight() && "New".equals(e.getRight().getName())));
+    }
+
+    @Test
     void shutdown_doesNotThrow() {
         assertDoesNotThrow(() -> service.shutdown());
     }
