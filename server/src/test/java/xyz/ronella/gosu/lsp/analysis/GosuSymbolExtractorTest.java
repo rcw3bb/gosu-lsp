@@ -374,5 +374,75 @@ class GosuSymbolExtractorTest {
         assertEquals(0, ranges.get(0).getStart().getLine());
         assertEquals(2, ranges.get(1).getStart().getLine());
     }
+
+    @Test
+    void findOccurrences_wordInLineComment_notReturned() {
+        String src = "var Foo : String\n// Foo is used here\nvar bar : Foo";
+        List<org.eclipse.lsp4j.Range> ranges = extractor.findOccurrences(src, "Foo");
+        assertEquals(2, ranges.size()); // line 0 and line 2 only
+        assertTrue(ranges.stream().noneMatch(r -> r.getStart().getLine() == 1));
+    }
+
+    @Test
+    void findOccurrences_wordInBlockComment_notReturned() {
+        String src = "var Foo : String\n/* Foo in comment */\nvar bar : Foo";
+        List<org.eclipse.lsp4j.Range> ranges = extractor.findOccurrences(src, "Foo");
+        assertEquals(2, ranges.size()); // line 0 and line 2 only
+        assertTrue(ranges.stream().noneMatch(r -> r.getStart().getLine() == 1));
+    }
+
+    // ── stripComments ─────────────────────────────────────────────────────
+
+    @Test
+    void extract_lineCommentedSymbol_notExtracted() {
+        String src = "// function commentedOut() {}\nfunction realFunc() {}";
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract(src);
+        assertTrue(symbols.stream().noneMatch(s -> s.name.equals("commentedOut")));
+        assertTrue(symbols.stream().anyMatch(s -> s.name.equals("realFunc")));
+    }
+
+    @Test
+    void extract_blockCommentedSymbol_notExtracted() {
+        String src = "/* class Hidden {} */\nclass Visible {}";
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract(src);
+        assertTrue(symbols.stream().noneMatch(s -> s.name.equals("Hidden")));
+        assertTrue(symbols.stream().anyMatch(s -> s.name.equals("Visible")));
+    }
+
+    @Test
+    void extract_multiLineBlockCommentedSymbol_notExtracted() {
+        String src = "/*\n * var ignored : String\n */\nvar real : Integer = 0";
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract(src);
+        assertTrue(symbols.stream().noneMatch(s -> s.name.equals("ignored")));
+        assertTrue(symbols.stream().anyMatch(s -> s.name.equals("real")));
+    }
+
+    @Test
+    void stripComments_lineComment_replacedWithSpaces() {
+        String result = GosuSymbolExtractor.stripComments("var x = 1 // inline\nvar y = 2");
+        assertFalse(result.contains("//"));
+        assertTrue(result.contains("var y"));
+    }
+
+    @Test
+    void stripComments_blockComment_preservesNewlines() {
+        String src = "/* line1\nline2 */\nvar z = 3";
+        String result = GosuSymbolExtractor.stripComments(src);
+        assertEquals(src.length(), result.length());
+        // newline inside block comment must be preserved
+        long newlinesBefore = src.chars().filter(c -> c == '\n').count();
+        long newlinesAfter  = result.chars().filter(c -> c == '\n').count();
+        assertEquals(newlinesBefore, newlinesAfter);
+    }
+
+    @Test
+    void extract_symbolAfterBlockComment_hasCorrectLine() {
+        String src = "/*\n * block comment\n */\nclass After {}";
+        List<GosuSymbolExtractor.Symbol> symbols = extractor.extract(src);
+        GosuSymbolExtractor.Symbol sym = symbols.stream()
+                .filter(s -> s.name.equals("After")).findFirst().orElse(null);
+        assertNotNull(sym);
+        assertEquals(3, sym.line);
+    }
 }
 
