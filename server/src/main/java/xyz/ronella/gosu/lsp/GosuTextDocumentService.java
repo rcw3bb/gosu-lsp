@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 /**
@@ -28,6 +31,7 @@ import java.util.logging.Logger;
 public class GosuTextDocumentService implements TextDocumentService {
 
     private static final Logger LOG = Logger.getLogger(GosuTextDocumentService.class.getName());
+    private static final ExecutorService EXECUTOR = Executors.newVirtualThreadPerTaskExecutor();
 
     @SuppressWarnings("PMD.UnusedPrivateField")
     private final GosuLanguageServer server;
@@ -121,7 +125,7 @@ public class GosuTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(
             CompletionParams params) {
-        return CompletableFuture.supplyAsync(() -> {
+        return async(() -> {
             List<CompletionItem> items = completionHandler.complete(
                     params.getTextDocument().getUri(),
                     params.getPosition()
@@ -132,7 +136,7 @@ public class GosuTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<Hover> hover(HoverParams params) {
-        return CompletableFuture.supplyAsync(() ->
+        return async(() ->
                 hoverHandler.hover(params.getTextDocument().getUri(), params.getPosition())
         );
     }
@@ -140,7 +144,7 @@ public class GosuTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
             DefinitionParams params) {
-        return CompletableFuture.supplyAsync(() -> {
+        return async(() -> {
             List<Location> locations = definitionHandler.definition(
                     params.getTextDocument().getUri(),
                     params.getPosition()
@@ -155,7 +159,7 @@ public class GosuTextDocumentService implements TextDocumentService {
         String uri = params.getTextDocument().getUri();
         List<Either<SymbolInformation, DocumentSymbol>> cached = symbolCache.get(uri);
         if (cached != null) return CompletableFuture.completedFuture(cached);
-        return CompletableFuture.supplyAsync(() -> {
+        return async(() -> {
             List<Either<SymbolInformation, DocumentSymbol>> result = hoverHandler.documentSymbols(uri);
             symbolCache.put(uri, result);
             return result;
@@ -164,7 +168,7 @@ public class GosuTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<? extends Location>> references(ReferenceParams params) {
-        return CompletableFuture.supplyAsync(() ->
+        return async(() ->
                 referencesHandler.references(
                         params.getTextDocument().getUri(),
                         params.getPosition(),
@@ -175,7 +179,7 @@ public class GosuTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<WorkspaceEdit> rename(RenameParams params) {
-        return CompletableFuture.supplyAsync(() ->
+        return async(() ->
                 renameHandler.rename(
                         params.getTextDocument().getUri(),
                         params.getPosition(),
@@ -187,7 +191,7 @@ public class GosuTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<Either3<Range, PrepareRenameResult, PrepareRenameDefaultBehavior>> prepareRename(
             PrepareRenameParams params) {
-        return CompletableFuture.supplyAsync(() -> {
+        return async(() -> {
             Range range = renameHandler.prepareRename(
                     params.getTextDocument().getUri(),
                     params.getPosition()
@@ -200,7 +204,7 @@ public class GosuTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<? extends TextEdit>> formatting(DocumentFormattingParams params) {
-        return CompletableFuture.supplyAsync(() ->
+        return async(() ->
                 formattingHandler.format(
                         params.getTextDocument().getUri(),
                         params.getOptions())
@@ -210,7 +214,7 @@ public class GosuTextDocumentService implements TextDocumentService {
     @Override
     public CompletableFuture<List<? extends TextEdit>> rangeFormatting(
             DocumentRangeFormattingParams params) {
-        return CompletableFuture.supplyAsync(() ->
+        return async(() ->
                 formattingHandler.formatRange(
                         params.getTextDocument().getUri(),
                         params.getRange(),
@@ -220,7 +224,7 @@ public class GosuTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
-        return CompletableFuture.supplyAsync(() ->
+        return async(() ->
                 codeActionHandler.getActions(
                         params.getTextDocument().getUri(),
                         params.getRange(),
@@ -230,7 +234,7 @@ public class GosuTextDocumentService implements TextDocumentService {
 
     @Override
     public CompletableFuture<List<InlayHint>> inlayHint(InlayHintParams params) {
-        return CompletableFuture.supplyAsync(() ->
+        return async(() ->
                 inlayHintHandler.getHints(
                         params.getTextDocument().getUri(),
                         params.getRange())
@@ -238,6 +242,11 @@ public class GosuTextDocumentService implements TextDocumentService {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────
+
+    /** Runs {@code task} on a virtual thread. */
+    private static <T> CompletableFuture<T> async(Supplier<T> task) {
+        return CompletableFuture.supplyAsync(task, EXECUTOR);
+    }
 
     /**
      * Applies a single incremental text change to {@code content}.

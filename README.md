@@ -1,7 +1,7 @@
 # Gosu LSP
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.4.1-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](CHANGELOG.md)
 
 A Language Server Protocol (LSP) implementation for the [Gosu programming language](https://gosu-lang.github.io/), providing Java-like IDE features for `.gs` and `.gsx` files in VS Code.
 
@@ -20,8 +20,8 @@ A Language Server Protocol (LSP) implementation for the [Gosu programming langua
 
 | Tool | Version |
 |---|---|
-| Java | 17 or higher |
-| Gradle (wrapper) | 8.8 |
+| Java | 21 or higher |
+| Gradle (wrapper) | 9.8.2 |
 | Node.js | 18 or higher |
 | VS Code | 1.85 or higher |
 

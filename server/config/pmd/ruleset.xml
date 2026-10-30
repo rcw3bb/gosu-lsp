@@ -17,9 +17,21 @@
       are incorrectly flagged when initialised with ConcurrentHashMap or ArrayList.
     -->
     <exclude name="LooseCoupling"/>
+    <!--
+      OnDemandImport: introduced by newer PMD releases; wildcard imports (e.g. org.eclipse.lsp4j.*)
+      are used deliberately across the LSP handlers.
+    -->
+    <exclude name="OnDemandImport"/>
+    <!-- UnnecessaryWarningSuppression: introduced by newer PMD releases; not yet triaged. -->
+    <exclude name="UnnecessaryWarningSuppression"/>
   </rule>
 
   <rule ref="category/java/errorprone.xml">
+    <!--
+      AvoidCatchingGenericException: introduced by newer PMD releases; broad catches guard
+      the LSP server against crashing on malformed input.
+    -->
+    <exclude name="AvoidCatchingGenericException"/>
     <!--
       AvoidLiteralsInIfCondition: character literals such as '\n' in loop conditions
       are idiomatic Java and do not warrant named constants.

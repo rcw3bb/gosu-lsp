@@ -85,4 +85,68 @@ class GosuSourceParserTest {
         GosuSourceParser.ParseResult result = parser.parse("package x");
         assertNotNull(result.parser);
     }
+
+    @Test
+    void parse_reifiedFunctionWithGenerics_noErrors() {
+        String src = "class Foo {\n  public reified function make<T>(x : T) : T {\n    return x\n  }\n}\n";
+        assertFalse(parser.parse(src).hasErrors());
+    }
+
+    @Test
+    void parse_getMethodCallOnType_noErrors() {
+        String src = "class Foo {\n  function bar() {\n    var s = DisplayKey.get(\"Property1\")\n  }\n}\n";
+        assertFalse(parser.parse(src).hasErrors());
+    }
+
+    @Test
+    void parse_getAndSetCallsWithWhitespaceBeforeParen_noErrors() {
+        String src = "class Foo {\n  function bar() {\n    var a = x?.get (1)\n    list.set\n(0, a)\n  }\n}\n";
+        assertFalse(parser.parse(src).hasErrors());
+    }
+
+    @Test
+    void parse_annotationDeclaration_noErrors() {
+        String src = "package com.example\n\nuses java.lang.annotation.Retention\nuses java.lang.annotation.Target\n\n"
+                + "@Target({METHOD})\n@Retention(RUNTIME)\nannotation DateFieldInfuser {\n}\n";
+        GosuSourceParser.ParseResult result = parser.parse(src);
+        assertFalse(result.hasErrors(), String.valueOf(result.errors));
+    }
+
+    @Test
+    void parse_annotationDeclarationWithMembers_noErrors() {
+        String src = "annotation Info {\n  function value() : String\n}\n";
+        assertFalse(parser.parse(src).hasErrors());
+    }
+
+    @Test
+    void parse_annotationElementWithDefaultValue_noErrors() {
+        String src = "annotation Info {\n  function sourceType() : String = \"\"\n"
+                + "  function count() : int = 1 + 2\n  function name() : String\n}\n";
+        GosuSourceParser.ParseResult result = parser.parse(src);
+        assertFalse(result.hasErrors(), String.valueOf(result.errors));
+    }
+
+    @Test
+    void parse_identifierNamedAnnotationElsewhere_noErrors() {
+        String src = "class Foo {\n  function bar() {\n    var annotation = 1\n  }\n}\n";
+        assertFalse(parser.parse(src).hasErrors());
+    }
+
+    @Test
+    void parse_nonAnnotationIdentifierAtTopLevel_hasErrors() {
+        assertTrue(parser.parse("foo Bar {\n}\n").hasErrors());
+    }
+
+    @Test
+    void parse_getMethodDeclaration_noErrors() {
+        String src = "class Foo {\n  function get(i : int) : int {\n    return i\n  }\n}\n";
+        assertFalse(parser.parse(src).hasErrors());
+    }
+
+    @Test
+    void parse_propertyGetAndSet_stillRecognisedAsKeywords() {
+        String src = "class Foo {\n  property get Name() : String {\n    return null\n  }\n"
+                + "  property set Name(v : String) {\n  }\n}\n";
+        assertFalse(parser.parse(src).hasErrors());
+    }
 }

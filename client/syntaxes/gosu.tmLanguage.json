@@ -66,7 +66,7 @@
     },
     "keywords-storage": {
       "name": "storage.modifier.gosu",
-      "match": "\\b(private|internal|protected|public|static|abstract|override|final|transient|readonly)\\b"
+      "match": "\\b(private|internal|protected|public|static|abstract|override|final|transient|reified|readonly)\\b"
     },
     "keywords-declaration": {
       "name": "storage.type.gosu",

@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.5.0 - 2026-10-30
+
+### Added
+- **`reified` modifier** — `reified function foo<T>()` now parses without diagnostics; the keyword is also offered in completions, spaced by the formatter, and highlighted by the TextMate grammar
+- **Virtual threads** — all `textDocument/*` request handlers and the LSP4J launcher now run on virtual threads (`Executors.newVirtualThreadPerTaskExecutor()`)
+
+### Changed
+- Server now requires **Java 21 or higher** (was 17)
+- Build upgraded to **Gradle 9.8.2** (builds on JDK 21 and 25); Shadow plugin moved to `com.gradleup.shadow` 9.6.1, PMD to 7.29.0 (new `OnDemandImport`, `UnnecessaryWarningSuppression` and `AvoidCatchingGenericException` rules excluded for now), and `junit-platform-launcher` added to the test runtime
+
+### Fixed
+- **`annotation` declarations** — `annotation Foo { }` (with `@Target({METHOD})` / `@Retention(RUNTIME)` annotations above it) is no longer reported as a syntax error; `annotation` is recognised contextually so `java.lang.annotation.*` imports and identifiers named `annotation` keep working
+- **`get`/`set` method calls** — `DisplayKey.get("Property1")`, `x?.get(0)`, `list.set(0, v)` and `function get()` no longer produce syntax errors; `get`/`set` are lexed as property accessor keywords only when not followed by `(`
+
 ## 0.4.1 - 2026-08-09
 
 ### Fixed
