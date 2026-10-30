@@ -115,6 +115,57 @@ class FormattingHandlerTest {
         assertTrue(result.contains("} else {"), "} else { must be on one line");
     }
 
+    private String formatted(String code) {
+        documents.open("file:///c.gs", code);
+        List<TextEdit> edits = handler.format("file:///c.gs", null);
+        return edits.isEmpty() ? code : edits.get(0).getNewText();
+    }
+
+    @Test
+    void format_keepsDocComment() {
+        String result = formatted("class A{\n/**\n * Doc here.\n * @param x the x\n */\nfunction f(x:int){var y=x}\n}");
+        assertTrue(result.contains("/**\n     * Doc here.\n     * @param x the x\n     */\n    function f"), result);
+    }
+
+    @Test
+    void format_keepsLineAndTrailingComments() {
+        String result = formatted("// header\nclass A{ // trailing\nvar x=1; // note\n}");
+        assertTrue(result.startsWith("// header\nclass A {"), result);
+        assertTrue(result.contains("{ // trailing\n"), result);
+        assertTrue(result.contains("var x = 1; // note\n"), result);
+    }
+
+    @Test
+    void format_preservesLineBreaksWithoutSemicolons() {
+        String result = formatted("function f(){\nvar a=1\nvar b=2\n}");
+        assertTrue(result.contains("var a = 1\n    var b = 2"), result);
+    }
+
+    @Test
+    void format_keepsSingleBlankLine() {
+        String result = formatted("class A{\nvar a=1\n\n\n\nvar b=2\n}");
+        assertTrue(result.contains("var a = 1\n\n    var b = 2"), result);
+    }
+
+    @Test
+    void format_forHeaderStaysOnOneLine() {
+        String result = formatted("function f(){for(var i=0;i<3;i++){print(i)}}");
+        assertTrue(result.contains("for (var i = 0; i<3; i++)"), result);
+        assertFalse(result.contains("var i = 0;\n"), result);
+    }
+
+    @Test
+    void format_isIdempotent() {
+        String once = formatted("// c\nclass A{\n/** d */\nfunction f(){\nvar a=1 // t\n\nreturn a\n}\n}\n");
+        assertEquals(once, formatted(once));
+    }
+
+    @Test
+    void format_neverDropsNonWhitespaceContent() {
+        String code = "class A{ var s = `x` }";
+        assertEquals(code, formatted(code));
+    }
+
     // ── formatRange ───────────────────────────────────────────────────────
 
     @Test

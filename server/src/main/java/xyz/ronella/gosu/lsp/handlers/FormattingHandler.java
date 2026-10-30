@@ -6,7 +6,9 @@ import xyz.ronella.gosu.lsp.grammar.GosuLanguageLexer;
 import org.antlr.v4.runtime.Token;
 import org.eclipse.lsp4j.*;
 
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -15,6 +17,8 @@ import java.util.List;
  * Uses a token-stream pass over the ANTLR-parsed token list to reconstruct
  * the source with consistent indentation and spacing.  Whitespace is skipped
  * by the lexer (-> skip), so all spacing is derived from token-type rules.
+ * Comments are kept on the hidden channel and re-emitted; the author's line
+ * breaks and single blank lines are preserved.
  *
  * Known limitation: {@code <} and {@code >} tokens are not given spaces
  * because they double as generic-type delimiters; relational comparisons
@@ -79,56 +83,150 @@ public class FormattingHandler {
         String indent = buildIndentUnit(opts);
         StringBuilder out = new StringBuilder();
         int depth = 0;
+        int parenDepth = 0;
+        Deque<Integer> parenStack = new ArrayDeque<>();
         boolean atLineStart = false;
+        int prevType = -1;          // last emitted token type (comments included)
+        int prevEndLine = -1;       // source line on which the last emitted token ends
+        boolean first = true;
 
         for (int i = 0; i < tokens.size(); i++) {
-            Token tok     = tokens.get(i);
-            int   type    = tok.getType();
+            Token tok  = tokens.get(i);
+            int   type = tok.getType();
             if (type == Token.EOF) break;
 
-            int prevType = i > 0 ? tokens.get(i - 1).getType() : -1;
-            int nextType = peekType(tokens, i + 1);
+            boolean comment = isComment(type);
+            int nextType = nextCodeType(tokens, i + 1);
+            Token nextRaw = i + 1 < tokens.size() ? tokens.get(i + 1) : null;
 
             // ── Pre-token ─────────────────────────────────────────────
 
             if (type == GosuLanguageLexer.RBRACE) {
                 depth = Math.max(0, depth - 1);
+                if (!parenStack.isEmpty()) parenDepth = parenStack.pop();
+            } else if (type == GosuLanguageLexer.RPAREN) {
+                parenDepth = Math.max(0, parenDepth - 1);
+            }
+
+            // Preserve the author's line breaks (Gosu statements need no ';') and one blank line
+            int gap = first ? 0 : tok.getLine() - prevEndLine;
+            boolean joinsPrevBrace = prevType == GosuLanguageLexer.RBRACE && isJoinWord(type);
+            if (!first && !atLineStart && gap > 0 && !joinsPrevBrace) {
+                out.append('\n');
+                atLineStart = true;
+            }
+            if (atLineStart && gap >= 2 && !first
+                    && prevType != GosuLanguageLexer.LBRACE
+                    && type != GosuLanguageLexer.RBRACE
+                    && !endsWithBlankLine(out)) {
+                out.append('\n');
             }
 
             if (atLineStart) {
-                out.append(indent.repeat(depth));
+                int level = depth + (parenDepth > 0 ? 1 : 0);
+                out.append(indent.repeat(level));
                 atLineStart = false;
-            } else if (i > 0 && needsSpaceBefore(prevType, type)) {
-                out.append(' ');
+            } else if (!first) {
+                if (comment || isComment(prevType)) {
+                    out.append(' ');
+                } else if (needsSpaceBefore(prevType, type)) {
+                    out.append(' ');
+                }
             }
 
             // ── Emit token ────────────────────────────────────────────
 
-            out.append(tok.getText());
+            if (type == GosuLanguageLexer.BLOCK_COMMENT) {
+                out.append(reindentBlockComment(tok.getText(), indent.repeat(depth)));
+            } else {
+                out.append(tok.getText());
+            }
+
+            first = false;
+            prevType = type;
+            prevEndLine = tok.getLine() + countNewlines(tok.getText());
 
             // ── Post-token ────────────────────────────────────────────
 
-            if (type == GosuLanguageLexer.LBRACE) {
+            boolean trailingCommentFollows = nextRaw != null
+                    && isComment(nextRaw.getType())
+                    && nextRaw.getLine() == prevEndLine;
+
+            if (type == GosuLanguageLexer.LINE_COMMENT) {
+                out.append('\n');
+                atLineStart = true;
+            } else if (type == GosuLanguageLexer.LPAREN) {
+                parenDepth++;
+            } else if (type == GosuLanguageLexer.LBRACE) {
                 depth++;
-                if (nextType != GosuLanguageLexer.RBRACE) {
+                parenStack.push(parenDepth);
+                parenDepth = 0;
+                if (nextType != GosuLanguageLexer.RBRACE && !trailingCommentFollows) {
                     out.append('\n');
                     atLineStart = true;
                 }
             } else if (type == GosuLanguageLexer.RBRACE) {
                 // Do not break the line when a join-word (else/catch/finally) follows
-                if (!isJoinWord(nextType) && nextType != Token.EOF) {
+                if (!isJoinWord(nextType) && nextType != Token.EOF && !trailingCommentFollows) {
                     out.append('\n');
                     atLineStart = true;
                 }
             } else if (type == GosuLanguageLexer.SEMI) {
-                if (nextType != GosuLanguageLexer.RBRACE && nextType != Token.EOF) {
+                // A ';' inside parentheses (e.g. a classic for header) must not break the line
+                if (parenDepth == 0 && nextType != GosuLanguageLexer.RBRACE
+                        && nextType != Token.EOF && !trailingCommentFollows) {
                     out.append('\n');
                     atLineStart = true;
                 }
             }
         }
 
-        return out.toString().stripTrailing();
+        String result = out.toString().stripTrailing();
+        if (content.endsWith("\n")) result += "\n";
+
+        // Safety net: never apply an edit that would drop or alter non-whitespace content
+        // (e.g. characters the lexer could not tokenize).
+        if (!withoutWhitespace(result).equals(withoutWhitespace(content))) return content;
+        return result;
+    }
+
+    private static boolean isComment(int type) {
+        return type == GosuLanguageLexer.BLOCK_COMMENT || type == GosuLanguageLexer.LINE_COMMENT;
+    }
+
+    private static boolean endsWithBlankLine(StringBuilder sb) {
+        int n = sb.length();
+        return n >= 2 && sb.charAt(n - 1) == '\n' && sb.charAt(n - 2) == '\n';
+    }
+
+    private static int countNewlines(String text) {
+        int count = 0;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '\n') count++;
+        }
+        return count;
+    }
+
+    /** Re-indents the continuation lines of a block comment; the first line is placed by the caller. */
+    private static String reindentBlockComment(String text, String indent) {
+        if (text.indexOf('\n') < 0) return text;
+        String[] lines = text.split("\r?\n", -1);
+        StringBuilder sb = new StringBuilder(lines[0]);
+        for (int i = 1; i < lines.length; i++) {
+            String trimmed = lines[i].stripLeading();
+            sb.append('\n');
+            if (trimmed.startsWith("*")) {
+                sb.append(indent).append(' ').append(trimmed.stripTrailing());
+            } else {
+                sb.append(lines[i].stripTrailing());
+            }
+        }
+        return sb.toString();
+    }
+
+    /** Collapses all whitespace so formatting can be checked to be content-preserving. */
+    private static String withoutWhitespace(String text) {
+        return text.replaceAll("\\s+", "");
     }
 
     // ── Spacing decision ──────────────────────────────────────────────────
@@ -160,6 +258,9 @@ public class FormattingHandler {
         if (prev == GosuLanguageLexer.LPAREN)          return false;
         if (prev == GosuLanguageLexer.BANG)            return false;
         if (prev == GosuLanguageLexer.TILDE)           return false;
+
+        // After ';' (only reachable inside a for header): space
+        if (prev == GosuLanguageLexer.SEMI && curr != GosuLanguageLexer.RBRACE) return true;
 
         // LPAREN: space only after control-flow keywords (not function names)
         if (curr == GosuLanguageLexer.LPAREN) return isControlKeyword(prev);
@@ -308,9 +409,12 @@ public class FormattingHandler {
             || isKeyword(type);
     }
 
-    private static int peekType(List<Token> tokens, int index) {
-        if (index >= tokens.size()) return Token.EOF;
-        return tokens.get(index).getType();
+    private static int nextCodeType(List<Token> tokens, int index) {
+        for (int i = index; i < tokens.size(); i++) {
+            int t = tokens.get(i).getType();
+            if (!isComment(t)) return t;
+        }
+        return Token.EOF;
     }
 
     private static String buildIndentUnit(FormattingOptions opts) {

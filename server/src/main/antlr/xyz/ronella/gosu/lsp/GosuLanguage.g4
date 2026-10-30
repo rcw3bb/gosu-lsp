@@ -703,8 +703,8 @@ PERCENT_EQ    : '%=' ;
 // ── Whitespace & comments ────────────────────────────────────
 
 WS           : [ \t\r\n]+      -> skip ;
-BLOCK_COMMENT: '/*' .*? '*/'   -> skip ;
-LINE_COMMENT : '//' ~[\r\n]*   -> skip ;
+BLOCK_COMMENT: '/*' .*? '*/'   -> channel(HIDDEN) ;
+LINE_COMMENT : '//' ~[\r\n]*   -> channel(HIDDEN) ;
 
 // ── Lexer fragments ──────────────────────────────────────────
 
