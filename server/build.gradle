@@ -2,17 +2,17 @@ plugins {
     id 'java'
     id 'application'
     id 'antlr'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'com.gradleup.shadow' version '9.6.1'
     id 'jacoco'
     id 'pmd'
 }
 
 group = 'xyz.ronella.gosu'
-version = '0.4.1-SNAPSHOT'
+version = '0.5.0-SNAPSHOT'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 application {
@@ -36,6 +36,7 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.3'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.3'
     testImplementation 'org.mockito:mockito-core:5.12.0'
     testImplementation 'org.mockito:mockito-junit-jupiter:5.12.0'
 }
@@ -49,7 +50,7 @@ test {
 // ─── PMD static analysis (main sources only) ──────────────────────────────
 
 pmd {
-    toolVersion = '7.4.0'
+    toolVersion = '7.29.0'
     consoleOutput = true
     ruleSets = []
     ruleSetFiles = files('config/pmd/ruleset.xml')
@@ -85,6 +86,9 @@ shadowJar {
     archiveBaseName    = 'gosu-lsp-server'
     archiveVersion     = version
     archiveClassifier  = ''
+    filesMatching('META-INF/services/**') {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE   // let mergeServiceFiles() see every duplicate
+    }
     mergeServiceFiles()
     manifest {
         attributes 'Main-Class':       application.mainClass.get(),

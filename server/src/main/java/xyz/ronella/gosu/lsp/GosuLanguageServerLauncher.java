@@ -5,6 +5,7 @@ import org.eclipse.lsp4j.launch.LSPLauncher;
 import org.eclipse.lsp4j.services.LanguageClient;
 
 import java.io.InputStream;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -32,11 +33,13 @@ public class GosuLanguageServerLauncher {
 
         GosuLanguageServer server = new GosuLanguageServer();
 
-        Launcher<LanguageClient> launcher = LSPLauncher.createServerLauncher(
-                server,
-                System.in,
-                System.out
-        );
+        Launcher<LanguageClient> launcher = new LSPLauncher.Builder<LanguageClient>()
+                .setLocalService(server)
+                .setRemoteInterface(LanguageClient.class)
+                .setInput(System.in)
+                .setOutput(System.out)
+                .setExecutorService(Executors.newVirtualThreadPerTaskExecutor())
+                .create();
 
         LanguageClient client = launcher.getRemoteProxy();
         server.connect(client);

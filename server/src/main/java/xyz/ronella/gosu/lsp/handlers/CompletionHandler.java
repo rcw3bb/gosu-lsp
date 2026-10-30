@@ -34,7 +34,7 @@ public class CompletionHandler {
             "or", "and", "not",
             "true", "false", "null", "NaN", "Infinity",
             "private", "internal", "protected", "public",
-            "static", "abstract", "override", "final", "transient"
+            "static", "abstract", "override", "final", "transient", "reified"
     );
 
     // -- Common built-in types -----------------------------------------------

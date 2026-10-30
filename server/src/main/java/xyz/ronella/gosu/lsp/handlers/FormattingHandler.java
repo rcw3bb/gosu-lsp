@@ -293,7 +293,8 @@ public class FormattingHandler {
                  GosuLanguageLexer.NOT,          GosuLanguageLexer.EVAL,
                  GosuLanguageLexer.ABSTRACT,     GosuLanguageLexer.FINAL,
                  GosuLanguageLexer.STATIC,       GosuLanguageLexer.OVERRIDE,
-                 GosuLanguageLexer.TRANSIENT,    GosuLanguageLexer.PRIVATE,
+                 GosuLanguageLexer.TRANSIENT,    GosuLanguageLexer.REIFIED,
+                 GosuLanguageLexer.PRIVATE,
                  GosuLanguageLexer.INTERNAL,     GosuLanguageLexer.PROTECTED,
                  GosuLanguageLexer.PUBLIC        -> true;
             default -> false;

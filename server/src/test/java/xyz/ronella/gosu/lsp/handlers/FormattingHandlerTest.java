@@ -23,6 +23,15 @@ class FormattingHandlerTest {
     // ── format ────────────────────────────────────────────────────────────
 
     @Test
+    void format_getCallAndReifiedModifier_keepSpacingIntact() {
+        documents.open("file:///foo.gs",
+                "class Foo{reified function bar<T>(){var s=DisplayKey.get(\"Property1\")}}");
+        String result = handler.format("file:///foo.gs", null).get(0).getNewText();
+        assertTrue(result.contains("reified function bar<T>()"), result);
+        assertTrue(result.contains("var s = DisplayKey.get(\"Property1\")"), result);
+    }
+
+    @Test
     void format_unknownUri_returnsEmpty() {
         List<TextEdit> edits = handler.format("file:///unknown.gs", null);
         assertTrue(edits.isEmpty());

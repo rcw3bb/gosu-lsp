@@ -31,6 +31,16 @@ class GosuTextDocumentServiceTest {
         service.connect(client);
     }
 
+    // ── virtual threads ───────────────────────────────────────────────────
+
+    @Test
+    void asyncHandlers_runOnVirtualThreads() throws Exception {
+        java.lang.reflect.Field f = GosuTextDocumentService.class.getDeclaredField("EXECUTOR");
+        f.setAccessible(true);
+        java.util.concurrent.ExecutorService executor = (java.util.concurrent.ExecutorService) f.get(null);
+        assertTrue(executor.submit(() -> Thread.currentThread().isVirtual()).get());
+    }
+
     // ── didOpen ───────────────────────────────────────────────────────────
 
     @Test

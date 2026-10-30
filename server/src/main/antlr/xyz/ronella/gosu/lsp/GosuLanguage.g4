@@ -1,5 +1,17 @@
 grammar GosuLanguage;
 
+@lexer::members {
+    /** True when the next non-whitespace character is '(' (i.e. get/set is a method name, not a property accessor). */
+    private boolean nextNonWsIsLParen() {
+        int i = 1;
+        int c = _input.LA(i);
+        while (c == ' ' || c == '\t' || c == '\r' || c == '\n') {
+            c = _input.LA(++i);
+        }
+        return c == '(';
+    }
+}
+
 // ============================================================
 // Parser Rules
 // ============================================================
@@ -27,6 +39,7 @@ topLevelDecl
       | interfaceDecl
       | enumDecl
       | enhancementDecl
+      | annotationDecl
       )
     ;
 
@@ -39,7 +52,7 @@ modifiers
 modifier
     : annotation
     | PRIVATE | INTERNAL | PROTECTED | PUBLIC
-    | STATIC | ABSTRACT | OVERRIDE | FINAL | TRANSIENT
+    | STATIC | ABSTRACT | OVERRIDE | FINAL | TRANSIENT | REIFIED
     ;
 
 annotation
@@ -74,6 +87,27 @@ enumDecl
 enhancementDecl
     : ENHANCEMENT Ident typeVariableDefs? COLON classOrInterfaceType (LBRACK RBRACK)*
       enhancementBody
+    ;
+
+// 'annotation' is contextual (it also appears in package names such as java.lang.annotation)
+annotationDecl
+    : {_input.LT(1).getText().equals("annotation")}? Ident Ident typeVariableDefs? annotationBody
+    ;
+
+// Annotation elements may declare a default value: function sourceType() : String = ""
+annotationBody
+    : LBRACE annotationMember* RBRACE
+    ;
+
+annotationMember
+    : modifiers
+      ( functionDecl (EQ expression)?
+      | propertyDecl
+      | fieldDecl
+      | classDecl
+      | interfaceDecl
+      | enumDecl
+      ) SEMI?
     ;
 
 classBody
@@ -547,8 +581,8 @@ VAR          : 'var'         ;
 DELEGATE     : 'delegate'    ;
 AS           : 'as'          ;
 READONLY     : 'readonly'    ;
-GET          : 'get'         ;
-SET          : 'set'         ;
+GET          : 'get' {!nextNonWsIsLParen()}? ;
+SET          : 'set' {!nextNonWsIsLParen()}? ;
 IF           : 'if'          ;
 ELSE         : 'else'        ;
 TRY          : 'try'         ;
@@ -590,6 +624,7 @@ FINAL        : 'final'       ;
 STATIC       : 'static'      ;
 OVERRIDE     : 'override'    ;
 TRANSIENT    : 'transient'   ;
+REIFIED      : 'reified'     ;
 PRIVATE      : 'private'     ;
 INTERNAL     : 'internal'    ;
 PROTECTED    : 'protected'   ;
